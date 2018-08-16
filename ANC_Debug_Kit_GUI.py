@@ -7,15 +7,31 @@
 ## PLEASE DO "NOT" EDIT THIS FILE!
 ###########################################################################
 
+import pyaudio
+import matplotlib
+matplotlib.use('WXAgg')
+
+from anc_debug_kit_monitor import Monitor
 import wx
+import anc_debug_kit_monitor
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import matplotlib.lines as line
+import numpy as np
+from numpy import arange, sin, pi
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
+from matplotlib.figure import Figure
 
 main_frame = 1000
 note_book_main = 1001
-rt_panel = 1002
-dpp_panel = 1003
-recompilePanel = 1004
-int_for_recomplie = 1005
-statusbar_main = 1006
+reat_time_pannel = 1002
+real_time_plt = 1003
+real_time_ctl = 1004
+real_time_weigting = 1005
+dpp_panel = 1006
+recompilePanel = 1007
+int_for_recomplie = 1008
+statusbar_main = 1009
 
 
 ###########################################################################
@@ -39,20 +55,24 @@ class FrameMain(wx.Frame):
         SizerMain.Add(self.m_staticText2, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
 
         self.NoteBookMain = wx.Notebook(self, note_book_main, wx.DefaultPosition, wx.DefaultSize, 0)
-        self.RealTimePanel = wx.Panel(self.NoteBookMain, rt_panel, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.RealTimePanel = wx.Panel(self.NoteBookMain, reat_time_pannel, wx.DefaultPosition, wx.DefaultSize,
+                                      wx.TAB_TRAVERSAL)
         bSizer4 = wx.BoxSizer(wx.HORIZONTAL)
 
         self.m_panel141 = wx.Panel(self.RealTimePanel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         bSizer12 = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.m_panel16 = wx.Panel(self.m_panel141, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        # here
+        self.m_panel16 = wx.Panel(self.m_panel141, real_time_plt, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.m_panel16.SetBackgroundColour(wx.Colour(255, 255, 255))
+
+        self.testPanel = MonitorPanel(self.m_panel16)
 
         bSizer12.Add(self.m_panel16, 2, wx.EXPAND | wx.ALL, 25)
 
         bSizer47 = wx.BoxSizer(wx.VERTICAL)
 
-        self.m_panel17 = wx.Panel(self.m_panel141, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.m_panel17 = wx.Panel(self.m_panel141, real_time_ctl, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.m_panel17.SetBackgroundColour(wx.Colour(255, 170, 82))
 
         sbSizer5 = wx.StaticBoxSizer(wx.StaticBox(self.m_panel17, wx.ID_ANY, u"Generic Settings"), wx.VERTICAL)
@@ -60,7 +80,7 @@ class FrameMain(wx.Frame):
         bSizer13 = wx.BoxSizer(wx.VERTICAL)
 
         m_radioBox31Choices = [u"A-Weight", u"B-Weight", u"C-Weight"]
-        self.m_radioBox31 = wx.RadioBox(self.m_panel17, wx.ID_ANY, u"Weighting method", wx.DefaultPosition,
+        self.m_radioBox31 = wx.RadioBox(self.m_panel17, real_time_weigting, u"Weighting method", wx.DefaultPosition,
                                         wx.DefaultSize, m_radioBox31Choices, 1, wx.RA_SPECIFY_ROWS)
         self.m_radioBox31.SetSelection(0)
         bSizer13.Add(self.m_radioBox31, 0, wx.ALL, 0)
@@ -481,6 +501,81 @@ class FrameMain(wx.Frame):
 
     def __del__(self):
         pass
+
+
+class TestPanel(wx.Panel):
+    def __init__(self,parent):
+        wx.Panel.__init__(self,parent)
+        self.figure = Figure()
+        self.axes = self.figure.add_subplot(111)
+        self.canvas = FigureCanvas(self,-1,self.figure)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.Add(self.canvas,1,wx.EXPAND | wx.ALL,)
+        self.SetSizer(self.sizer)
+        self.Fit()
+
+    def draw(self):
+        t = arange(0.0,3.0,0.01)
+        s = sin(2*pi*t)
+        self.axes.plot(t,s)
+
+class MonitorPanel(wx.Panel):
+
+    def __init__(self,parent):
+        wx.Panel.__init__(self,parent)
+        self.monitor = Monitor(44100,pyaudio.paInt16,1,32768)
+        self.CHUNK = 32768
+        self.figure = Figure(figsize=(8,6))
+        self.canvas = FigureCanvas(self,-1,self.figure)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.Add(self.canvas,1,wx.EXPAND | wx.ALL,)
+        self.SetSizer(self.sizer)
+        self.Fit()
+
+
+
+        rt_ax = self.figure.add_subplot(211,
+                                        xlim=(0, self.CHUNK/44100),
+                                        ylim=(-0.01, 0.01),
+                                        ylabel = 'Amplitude(V)',
+                                        frame_on = True,
+                                        autoscale_on = True)
+
+        rt_ax.grid(True,which='both')
+
+        fft_ax = self.figure.add_subplot(212,
+                                         xlim = (10, 20000),
+                                         ylim = (0.00001, 100),
+                                         yscale = 'log',
+                                         xscale = 'log',
+                                         ylabel = 'Sound Pressure(Pa)',
+                                         xlabel = 'Frequency(Hz)'
+                                         )
+        fft_ax.grid(True,which='both')
+
+        rt_line = line.Line2D([], [],color='#C54900')
+        fft_line = line.Line2D([], [],color='#C54900')
+
+        rt_x_data = np.arange(0, self.CHUNK / 44100, 1 / 44100)
+        fft_x_data = np.arange(0, (self.CHUNK / 2 + 1) / (self.CHUNK) * 44100, (1) / (self.CHUNK) * 44100)
+
+
+        def plot_init():
+            rt_ax.add_line(rt_line)
+            fft_ax.add_line(fft_line)
+            return fft_line, rt_line,
+
+        def plot_update(i):
+            rt_line.set_xdata(rt_x_data)
+            rt_line.set_ydata(self.monitor.realTimeData)
+
+            fft_line.set_xdata(fft_x_data)
+            fft_line.set_ydata(self.monitor.fftData)
+            return fft_line, rt_line,
+
+        ani = animation.FuncAnimation(self.figure, plot_update,init_func=plot_init,blit=True)
+        self.monitor.start()
+        self.canvas.draw()
 
 
 if __name__ == '__main__':
