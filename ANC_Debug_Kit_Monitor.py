@@ -38,8 +38,8 @@ class Monitor():
 
 
         self.audioQueue = queue.Queue()
-        self.window = signal.hamming(CHUNK)
-        self.realTimeData= np.arange(0, CHUNK, 1)
+        self.window = signal.hamming(pFramesPerBuffer)
+        self.realTimeData= np.arange(0, pFramesPerBuffer, 1)
         self.fftData=[]
 
 
@@ -139,7 +139,6 @@ if __name__ == "__main__":
                                   blit=True)
 
     monitor.start()
-
     plt.show()
 
 

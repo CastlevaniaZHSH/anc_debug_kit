@@ -21,11 +21,15 @@ from numpy import arange, sin, pi
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.figure import Figure
 import os
+import time
 
 main_frame = 1000
 realTime_weigting = 1001
 dpp_panel = 1002
 recompilePanel = 1003
+
+main_frame_width = 1024
+main_frame_height = 768
 
 
 ###########################################################################
@@ -35,9 +39,10 @@ recompilePanel = 1003
 ###########################################################################
 
 weighting_index = 0
-sampling_index = 0
+sampling_index = 5
+sample_point_choicesChoices = [1024, 2048, 4096, 8192, 16384, 32768]
 
-realTime_x_upper = 0.5
+realTime_x_upper = 0.1
 realTime_x_lower = 0
 realTime_y_upper = 0.5
 realTime_y_lower = -0.5
@@ -45,8 +50,8 @@ realTime_y_lower = -0.5
 fft_x_type_index = 0
 fft_x_upper = 2000
 fft_x_lower = 20
-fft_y_upper = 10000
-fft_y_lower = 1
+fft_y_upper = 100
+fft_y_lower = 0.001
 
 is_anc_on = False
 anc_info = " 100dBA with maximum "
@@ -71,7 +76,8 @@ sigCal_samplingIndex = 0
 class frameMain(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, id=main_frame, title=wx.EmptyString, pos=wx.DefaultPosition,
-                          size=wx.Size(1024, 768), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+                          size=wx.Size(main_frame_width, main_frame_height), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+
 
         self.SetSizeHintsSz(wx.DefaultSize, wx.DefaultSize)
         self.SetBackgroundColour(wx.Colour(117, 117, 117))
@@ -93,11 +99,20 @@ class frameMain(wx.Frame):
                                        wx.TAB_TRAVERSAL)
         boxSizerRealtime2 = wx.BoxSizer(wx.HORIZONTAL)
 
+        #self.m_bitmap3 = wx.StaticBitmap(self.panelRealtime2, wx.ID_ANY, wx.Bitmap(u"/Users/Vicent/Downloads/ANC_2h5h/anc_debug_kit/logo33.png", wx.BITMAP_TYPE_ANY),
+        #                                 wx.DefaultPosition, wx.DefaultSize, 0)
+        #boxSizerRealtime2.Add(self.m_bitmap3, 0, wx.ALIGN_BOTTOM | wx.BOTTOM, 20)
+
         self.panelMonitor = wx.Panel(self.panelRealtime2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
                                      wx.TAB_TRAVERSAL)
         self.panelMonitor.SetBackgroundColour(wx.Colour(255, 255, 255))
 
-        self.testPanel = MonitorPanel(self.panelMonitor)
+        self.testPanel = MonitorPanel(self.panelMonitor,widthPixel=main_frame_width,heightPixel=main_frame_height,
+                                      rt_xlower=realTime_x_lower,rt_xupper=realTime_x_upper,
+                                      rt_ylower=realTime_y_lower,rt_yupper=realTime_y_upper,
+                                      fft_xlower=fft_x_lower,fft_xupper=fft_x_upper,
+                                      fft_ylower=fft_y_lower,fft_yupper = fft_y_upper,fftxAxis='log')
+
 
         boxSizerRealtime2.Add(self.panelMonitor, 4, wx.EXPAND | wx.ALL, 25)
 
@@ -126,7 +141,7 @@ class frameMain(wx.Frame):
         self.m_staticText10.Wrap(-1)
         bSizer14.Add(self.m_staticText10, 0, wx.ALL, 6)
 
-        sample_point_choicesChoices = [u"1024", u"2048", u"4096", u"8192"]
+        sample_point_choicesChoices = [u"1024", u"2048", u"4096", u"8192", u"16384", u"32768"]
         self.sample_point_choices = wx.Choice(self.m_monitor_controller, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
                                               sample_point_choicesChoices, 0)
         self.sample_point_choices.SetSelection(sampling_index)
@@ -354,6 +369,11 @@ class frameMain(wx.Frame):
 
         bSizer10 = wx.BoxSizer(wx.HORIZONTAL)
 
+        self.m_bitmap2 = wx.StaticBitmap(self.DataProcessingPanel, wx.ID_ANY,
+                                         wx.Bitmap(u"/Users/Vicent/Downloads/ANC_2h5h/anc_debug_kit/logo33.png", wx.BITMAP_TYPE_ANY), wx.DefaultPosition,
+                                         wx.DefaultSize, 0)
+        bSizer10.Add(self.m_bitmap2, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT, 5)
+
         sbSizer3 = wx.StaticBoxSizer(wx.StaticBox(self.DataProcessingPanel, wx.ID_ANY, u"Signals"), wx.VERTICAL)
 
         sig_list_boxChoices = []
@@ -573,7 +593,7 @@ class frameMain(wx.Frame):
 
         bSizer81 = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.m_bitmap1 = wx.StaticBitmap(self.m_panel131, wx.ID_ANY, wx.Bitmap(u"WechatIMG88.png", wx.BITMAP_TYPE_ANY),
+        self.m_bitmap1 = wx.StaticBitmap(self.m_panel131, wx.ID_ANY, wx.Bitmap(u"/Users/Vicent/Downloads/ANC_2h5h/anc_debug_kit/logo.png", wx.BITMAP_TYPE_PNG),
                                          wx.DefaultPosition, wx.DefaultSize, 0)
         bSizer81.Add(self.m_bitmap1, 0, wx.ALIGN_BOTTOM | wx.RIGHT, 20)
 
@@ -622,6 +642,7 @@ class frameMain(wx.Frame):
         self.Centre(wx.BOTH)
 
         # Connect Events
+        self.Bind(wx.EVT_SIZE, self.fressh)
         self.weighting_Radio_groups.Bind(wx.EVT_RADIOBOX, self.OnWeightingChange)
         self.sample_point_choices.Bind(wx.EVT_CHOICE, self.onSamplingPointChange)
         self.rtAx_upper_limit.Bind(wx.EVT_TEXT_ENTER, self.onRTXupperChange)
@@ -644,6 +665,26 @@ class frameMain(wx.Frame):
 
     def __del__(self):
         pass
+
+    def update_testPanel(self):
+        self.testPanel.ani._stop()
+        self.testPanel.Destroy()
+        time.sleep(1)
+        self.testPanel = MonitorPanel(self.panelMonitor,samplingPoints=sample_point_choicesChoices[sampling_index],
+                                      widthPixel=main_frame_width, heightPixel=main_frame_height,
+                                      rt_xlower=realTime_x_lower, rt_xupper=realTime_x_upper,
+                                      rt_ylower=realTime_y_lower, rt_yupper=realTime_y_upper,
+                                      fft_xlower=fft_x_lower, fft_xupper=fft_x_upper,
+                                      fft_ylower=fft_y_lower, fft_yupper=fft_y_upper, fftxAxis='log')
+
+
+    def fressh(self, event):
+        print('fresshhh')
+        global main_frame_width
+        global main_frame_height
+        main_frame_width,main_frame_height = self.GetSize()
+        self.update_testPanel()
+        event.Skip()
 
     def getANCIndex(self,anc_on_off):
             return (0 if (anc_on_off) else 1)
@@ -682,93 +723,112 @@ class frameMain(wx.Frame):
         event.Skip()
 
     def onSamplingPointChange(self, event):
+        global sampling_index
         sampling_index = self.sample_point_choices.GetSelection()
         self.printStatus("sampling_index->"+str(sampling_index))
+        self.update_testPanel()
         event.Skip()
 
     def onRTXupperChange(self, event):
         temp = self.rtAx_upper_limit.GetValue()
-        realTime_x_upper = 0.5
+        global realTime_x_upper
         if(self.is_digit(temp)):
             if(float(temp) > realTime_x_lower):
                 realTime_x_upper = temp
         self.rtAx_upper_limit.SetValue(str(realTime_x_upper))
+        realTime_x_upper= float(temp)
         self.printStatus("realTime_x_upper->"+str(realTime_x_upper))
+        self.update_testPanel()
         event.Skip()
 
     def onRTXlowerChange(self, event):
         temp = self.rtAx_lower_limit.GetValue()
-        realTime_x_lower = 0
+        global realTime_x_lower
         if (self.is_digit(temp)):
             if (float(temp) < realTime_x_upper):
                 realTime_x_lower = temp
         self.rtAx_lower_limit.SetValue(str(realTime_x_lower))
+        realTime_x_lower = float(temp)
         self.printStatus("realTime_x_lower->" + str(realTime_x_lower))
+        self.update_testPanel()
         event.Skip()
 
     def onRTYupperChange(self, event):
         temp = self.rtAy_upper_limit.GetValue()
-        realTime_y_upper = 0.5
+        global realTime_y_upper
         if (self.is_digit(temp)):
             if (float(temp) > realTime_y_lower):
                 realTime_y_upper = temp
         self.rtAy_upper_limit.SetValue(str(realTime_y_upper))
+        realTime_y_upper = float(temp)
         self.printStatus("realTime_y_upper->" + str(realTime_y_upper))
+        self.update_testPanel()
         event.Skip()
 
     def onRTYlowerChange(self, event):
         temp = self.rtAy_lower_limit.GetValue()
-        realTime_y_lower = -0.5
+        global realTime_y_lower
         if (self.is_digit(temp)):
             if (float(temp) < realTime_y_upper):
                 realTime_y_lower = temp
         self.rtAy_lower_limit.SetValue(str(realTime_y_lower))
+        realTime_y_lower = float(temp)
         self.printStatus("realTime_y_lower->" + str(realTime_y_lower))
+        self.update_testPanel()
         event.Skip()
 
     def onFFTXtypeChange(self, event):
         fft_x_type_index = self.fft_Ax_log_radio_group.GetSelection()
         self.printStatus("fft_x_type_index->" + str(fft_x_type_index))
+        self.update_testPanel()
         event.Skip()
 
     def onFFTXupperChange(self, event):
         temp = self.fftAx_upper.GetValue()
-        fft_x_upper = 2000
+        global fft_x_upper
         if (self.is_digit(temp)):
             if (float(temp) > fft_x_lower):
                 fft_x_upper = temp
         self.fftAx_upper.SetValue(str(fft_x_upper))
         self.printStatus("fft_x_upper->" + str(fft_x_upper))
+        fft_x_upper = int(temp)
+        self.update_testPanel()
         event.Skip()
 
     def onFFTXlowerChange(self, event):
         temp = self.fftAx_lower.GetValue()
-        fft_x_lower = 20
+        global fft_x_lower
         if (self.is_digit(temp)):
             if (float(temp) < fft_x_upper):
                 fft_x_lower = temp
         self.fftAx_lower.SetValue(str(fft_x_lower))
         self.printStatus("fft_x_lower->" + str(fft_x_lower))
+        fft_x_lower = int(temp)
+        self.update_testPanel()
         event.Skip()
 
     def onFFTYupperChange(self, event):
         temp = self.fftAy_upper.GetValue()
-        fft_y_upper = 10000
+        global fft_y_upper
         if (self.is_digit(temp)):
             if (float(temp) > fft_y_lower):
                 fft_y_upper = temp
         self.fftAy_upper.SetValue(str(fft_y_upper))
         self.printStatus("fft_y_upper->" + str(fft_y_upper))
+        fft_y_upper = float(temp)
+        self.update_testPanel()
         event.Skip()
 
     def onFFTYlowerChange(self, event):
         temp = self.fftAy_lower.GetValue()
-        fft_y_lower = 1
+        global fft_y_lower
         if (self.is_digit(temp)):
             if (float(temp) < fft_y_upper):
                 fft_y_lower = temp
         self.fftAy_lower.SetValue(str(fft_y_lower))
         self.printStatus("fft_y_lower->" + str(fft_y_lower))
+        fft_y_lower = float(temp)
+        self.update_testPanel()
         event.Skip()
 
     def onANCStatusChange(self, event):
@@ -778,6 +838,7 @@ class frameMain(wx.Frame):
         is_anc_on = self.anc_toggle_botton.GetValue()
         self.printStatus("is_anc_on->" + str(is_anc_on))
         self.anc_status_radio_group.SetSelection(self.getANCIndex(is_anc_on))
+        print(self.panelMonitor.GetSize())
         event.Skip()
 
     def onSigFolderSelected(self, event):
@@ -817,49 +878,53 @@ class frameMain(wx.Frame):
 
 class MonitorPanel(wx.Panel):
 
-    def __init__(self,parent):
-        wx.Panel.__init__(self,parent)
-        self.monitor = Monitor(44100,pyaudio.paInt16,1,32768)
-        self.CHUNK = 32768
-        self.figure = Figure(figsize=(8,6))
-        self.canvas = FigureCanvas(self,-1,self.figure)
+    def __init__(self,parent,
+                 widthPixel=1024,heightPixel=768,
+                 samplingPoints=32768,
+                 rt_xlower = 0.0, rt_xupper = 0.5,
+                 rt_ylower = -0.5, rt_yupper = 0.5,
+                 fft_xlower = 10 ,fft_xupper = 20000,
+                 fft_ylower = 0.0001 ,fft_yupper = 100,
+                 fftxAxis = 'log' ):
+
+        wx.Panel.__init__(self, parent)
+        self.monitor = Monitor(44100, pyaudio.paInt16, 1, samplingPoints)
+        self.CHUNK = samplingPoints
+        self.figure = Figure(figsize=(widthPixel/200, heightPixel/140))
+        self.canvas = FigureCanvas(self, -1, self.figure)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.canvas,1,wx.EXPAND | wx.ALL,)
+        self.sizer.Add(self.canvas, 1, wx.ALL | wx.CENTER)
         self.SetSizer(self.sizer)
         self.Fit()
 
-
-
         rt_ax = self.figure.add_subplot(211,
-                                        xlim=(0, self.CHUNK/44100),
-                                        ylim=(-0.01, 0.01),
+                                        xlim=(rt_xlower, rt_xupper),
+                                        ylim=(rt_ylower, rt_yupper),
                                         ylabel = 'Amplitude(V)',
-                                        frame_on = True,
-                                        autoscale_on = True)
+                                        frame_on= True)
 
-        rt_ax.grid(True,which='both')
+        rt_ax.grid(True, which='both')
 
         fft_ax = self.figure.add_subplot(212,
-                                         xlim = (10, 20000),
-                                         ylim = (0.00001, 100),
-                                         yscale = 'log',
-                                         xscale = 'log',
-                                         ylabel = 'Sound Pressure(Pa)',
-                                         xlabel = 'Frequency(Hz)'
+                                         xlim=(fft_xlower, fft_xupper),
+                                         ylim=(fft_ylower, fft_yupper),
+                                         yscale='log',
+                                         xscale=fftxAxis,
+                                         ylabel='Sound Pressure(Pa)',
+                                         xlabel='Frequency(Hz)'
                                          )
-        fft_ax.grid(True,which='both')
+        fft_ax.grid(True, which='both')
 
-        rt_line = line.Line2D([], [],color='#C54900')
-        fft_line = line.Line2D([], [],color='#C54900')
+        rt_line = line.Line2D([], [], color='#C54900')
+        fft_line = line.Line2D([], [], color='#C54900')
 
         rt_x_data = np.arange(0, self.CHUNK / 44100, 1 / 44100)
         fft_x_data = np.arange(0, (self.CHUNK / 2 + 1) / (self.CHUNK) * 44100, (1) / (self.CHUNK) * 44100)
 
-
         def plot_init():
             rt_ax.add_line(rt_line)
             fft_ax.add_line(fft_line)
-            return fft_line, rt_line,
+            return fft_line, rt_line
 
         def plot_update(i):
             rt_line.set_xdata(rt_x_data)
@@ -867,11 +932,18 @@ class MonitorPanel(wx.Panel):
 
             fft_line.set_xdata(fft_x_data)
             fft_line.set_ydata(self.monitor.fftData)
-            return fft_line, rt_line,
+            return fft_line, rt_line
 
-        ani = animation.FuncAnimation(self.figure, plot_update,init_func=plot_init,blit=True)
+        self.ani = animation.FuncAnimation(self.figure, plot_update, init_func=plot_init, repeat=False)
         self.monitor.start()
         self.canvas.draw()
+
+    def __del__(self):
+        self.ani._stop()
+        del self.monitor
+
+
+
 
 
 if __name__ == '__main__':
