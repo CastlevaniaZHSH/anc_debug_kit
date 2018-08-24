@@ -11,9 +11,11 @@ import matplotlib
 matplotlib.use('WXAgg')
 
 from anc_debug_kit_monitor import Monitor
+from anc_debug_kit_matlab_caller import tfplotter
 import wx
 import anc_debug_kit_monitor
 import matplotlib.pyplot as plt
+import threading
 import matplotlib.animation as animation
 import matplotlib.lines as line
 import numpy as np
@@ -52,6 +54,10 @@ fft_x_upper = 2000
 fft_x_lower = 20
 fft_y_upper = 100
 fft_y_lower = 0.001
+
+datadist = {}
+tforder = 300
+learning_rate = 0.5
 
 is_anc_on = False
 anc_info = " 100dBA with maximum "
@@ -369,10 +375,10 @@ class frameMain(wx.Frame):
 
         bSizer10 = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.m_bitmap2 = wx.StaticBitmap(self.DataProcessingPanel, wx.ID_ANY,
-                                         wx.Bitmap(u"/Users/Vicent/Downloads/ANC_2h5h/anc_debug_kit/logo33.png", wx.BITMAP_TYPE_ANY), wx.DefaultPosition,
-                                         wx.DefaultSize, 0)
-        bSizer10.Add(self.m_bitmap2, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT, 5)
+        #self.m_bitmap2 = wx.StaticBitmap(self.DataProcessingPanel, wx.ID_ANY,
+        #                                 wx.Bitmap(u"/Users/Vicent/Downloads/ANC_2h5h/anc_debug_kit/logo33.png", wx.BITMAP_TYPE_ANY), wx.DefaultPosition,
+        #                                 wx.DefaultSize, 0)
+        #bSizer10.Add(self.m_bitmap2, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT, 5)
 
         sbSizer3 = wx.StaticBoxSizer(wx.StaticBox(self.DataProcessingPanel, wx.ID_ANY, u"Signals"), wx.VERTICAL)
 
@@ -470,12 +476,20 @@ class frameMain(wx.Frame):
 
         self.speaker1 = wx.Notebook(self.speaker_1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_LEFT)
         self.speaker1mic1 = wx.Panel(self.speaker1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker1mic1.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker1mic1 = TFPanel(self.speaker1mic1,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker1.AddPage(self.speaker1mic1, u"Mic1", False)
         self.speaker1mic2 = wx.Panel(self.speaker1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker1mic2.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker1mic2 = TFPanel(self.speaker1mic2,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker1.AddPage(self.speaker1mic2, u"Mic2", False)
         self.speaker1mic3 = wx.Panel(self.speaker1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker1mic3.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker1mic3 = TFPanel(self.speaker1mic3,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker1.AddPage(self.speaker1mic3, u"Mic3", False)
         self.speaker1mic4 = wx.Panel(self.speaker1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker1mic4.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker1mic4 = TFPanel(self.speaker1mic4,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker1.AddPage(self.speaker1mic4, u"Mic4", False)
 
         bSizer25.Add(self.speaker1, 1, wx.ALL | wx.EXPAND, 5)
@@ -489,12 +503,20 @@ class frameMain(wx.Frame):
 
         self.speaker2 = wx.Notebook(self.speaker_2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_LEFT)
         self.speaker2mic1 = wx.Panel(self.speaker2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker2mic1.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker2mic1 = TFPanel(self.speaker2mic1,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker2.AddPage(self.speaker2mic1, u"Mic1", False)
         self.speaker2mic2 = wx.Panel(self.speaker2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker2mic2.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker2mic2 = TFPanel(self.speaker2mic2,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker2.AddPage(self.speaker2mic2, u"Mic2", False)
         self.speaker2mic3 = wx.Panel(self.speaker2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker2mic3.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker2mic3 = TFPanel(self.speaker2mic3,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker2.AddPage(self.speaker2mic3, u"Mic3", False)
         self.speaker2mic4 = wx.Panel(self.speaker2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker2mic4.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker2mic4 = TFPanel(self.speaker2mic4,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker2.AddPage(self.speaker2mic4, u"Mic4", False)
 
         bSizer26.Add(self.speaker2, 1, wx.EXPAND | wx.ALL, 5)
@@ -508,12 +530,20 @@ class frameMain(wx.Frame):
 
         self.speaker3 = wx.Notebook(self.speaker_3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_LEFT)
         self.speaker3mic1 = wx.Panel(self.speaker3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker3mic1.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker3mic1 = TFPanel(self.speaker3mic1,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker3.AddPage(self.speaker3mic1, u"Mic1", False)
         self.speaker3mic2 = wx.Panel(self.speaker3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker3mic2.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker3mic2 = TFPanel(self.speaker3mic2,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker3.AddPage(self.speaker3mic2, u"Mic2", False)
         self.speaker3mic3 = wx.Panel(self.speaker3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker3mic3.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker3mic3 = TFPanel(self.speaker3mic3,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker3.AddPage(self.speaker3mic3, u"Mic3", False)
         self.speaker3mic4 = wx.Panel(self.speaker3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker3mic4.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker3mic4 = TFPanel(self.speaker3mic4,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker3.AddPage(self.speaker3mic4, u"Mic4", False)
 
         bSizer27.Add(self.speaker3, 1, wx.EXPAND | wx.ALL, 5)
@@ -527,12 +557,20 @@ class frameMain(wx.Frame):
 
         self.speaker4 = wx.Notebook(self.speaker_4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_LEFT)
         self.speaker4mic1 = wx.Panel(self.speaker4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker4mic1.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker4mic1 = TFPanel(self.speaker4mic1,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker4.AddPage(self.speaker4mic1, u"Mic1", False)
         self.speaker4mic2 = wx.Panel(self.speaker4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker4mic2.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker4mic2 = TFPanel(self.speaker4mic2,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker4.AddPage(self.speaker4mic2, u"Mic2", False)
         self.speaker4mic3 = wx.Panel(self.speaker4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker4mic3.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker4mic3 = TFPanel(self.speaker4mic3,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker4.AddPage(self.speaker4mic3, u"Mic3", False)
         self.speaker4mic4 = wx.Panel(self.speaker4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.speaker4mic4.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.tfpicspeaker4mic4 = TFPanel(self.speaker4mic4,[],widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker4.AddPage(self.speaker4mic4, u"Mic4", False)
 
         bSizer28.Add(self.speaker4, 1, wx.EXPAND | wx.ALL, 5)
@@ -679,11 +717,12 @@ class frameMain(wx.Frame):
 
 
     def fressh(self, event):
-        print('fresshhh')
         global main_frame_width
         global main_frame_height
         main_frame_width,main_frame_height = self.GetSize()
         self.update_testPanel()
+        if datadist!={}:
+            self.updateTFplots()
         event.Skip()
 
     def getANCIndex(self,anc_on_off):
@@ -842,6 +881,7 @@ class frameMain(wx.Frame):
         event.Skip()
 
     def onSigFolderSelected(self, event):
+        global sigCal_workingPath
         sigCal_workingPath = self.sig_dialog_picker.GetPath()
         self.sig_list_box.Clear()
         self.printStatus("sigCal_workingPath->" + str(sigCal_workingPath))
@@ -851,10 +891,17 @@ class frameMain(wx.Frame):
             for i in range(fileLength):
                 print(filePaths[i])
                 self.sig_list_box.Append(filePaths[i])
+        self.start_matlabcal()
         event.Skip()
 
+
     def onTForderChange(self, event):
-        sigCal_TFOrder = self.sig_tf_order.GetValue()
+        global sigCal_TFOrder
+        sigCal_TFOrder = 300
+        temp = self.sig_tf_order.GetValue()
+        if(self.is_digit(temp)):
+            if(int(temp)>20 and int(temp)<500):
+                sigCal_TFOrder = int(temp)
         self.printStatus("sigCal_TFOrder->" + str(sigCal_TFOrder))
         event.Skip()
 
@@ -869,11 +916,108 @@ class frameMain(wx.Frame):
         event.Skip()
 
     def onCalculateNewTF(self, event):
+        self.start_matlabcal()
+        self.updateTFplots()
         event.Skip()
 
     def onGenerateNewC(self, event):
         event.Skip()
 
+    def updateTFplots(self):
+        self.tfpicspeaker1mic1.Destroy()
+        self.tfpicspeaker1mic1 = TFPanel(self.speaker1mic1,datadist['tf_spk1_mic1_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+        self.tfpicspeaker1mic2.Destroy()
+        self.tfpicspeaker1mic2 = TFPanel(self.speaker1mic2,datadist['tf_spk1_mic2_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+        self.tfpicspeaker1mic3.Destroy()
+        self.tfpicspeaker1mic3 = TFPanel(self.speaker1mic3,datadist['tf_spk1_mic3_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+        self.tfpicspeaker1mic4.Destroy()
+        self.tfpicspeaker1mic4 = TFPanel(self.speaker1mic4,datadist['tf_spk1_mic4_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+
+
+        self.tfpicspeaker2mic1.Destroy()
+        self.tfpicspeaker2mic1 = TFPanel(self.speaker2mic1,datadist['tf_spk2_mic1_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+        self.tfpicspeaker2mic2.Destroy()
+        self.tfpicspeaker2mic2 = TFPanel(self.speaker2mic2,datadist['tf_spk2_mic2_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+        self.tfpicspeaker2mic3.Destroy()
+        self.tfpicspeaker2mic3 = TFPanel(self.speaker2mic3,datadist['tf_spk2_mic3_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+        self.tfpicspeaker2mic4.Destroy()
+        self.tfpicspeaker2mic4 = TFPanel(self.speaker2mic4,datadist['tf_spk2_mic4_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+
+
+        self.tfpicspeaker3mic1.Destroy()
+        self.tfpicspeaker3mic1 = TFPanel(self.speaker3mic1,datadist['tf_spk3_mic1_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+        self.tfpicspeaker3mic2.Destroy()
+        self.tfpicspeaker3mic2 = TFPanel(self.speaker3mic2,datadist['tf_spk3_mic2_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+        self.tfpicspeaker3mic3.Destroy()
+        self.tfpicspeaker3mic3 = TFPanel(self.speaker3mic3,datadist['tf_spk3_mic3_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+        self.tfpicspeaker3mic4.Destroy()
+        self.tfpicspeaker3mic4 = TFPanel(self.speaker3mic4,datadist['tf_spk3_mic4_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+
+
+
+        self.tfpicspeaker4mic1.Destroy()
+        self.tfpicspeaker4mic1 = TFPanel(self.speaker4mic1,datadist['tf_spk4_mic1_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+        self.tfpicspeaker4mic2.Destroy()
+        self.tfpicspeaker4mic2 = TFPanel(self.speaker4mic2,datadist['tf_spk4_mic2_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+        self.tfpicspeaker4mic3.Destroy()
+        self.tfpicspeaker4mic3 = TFPanel(self.speaker4mic3,datadist['tf_spk4_mic3_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+        self.tfpicspeaker4mic4.Destroy()
+        self.tfpicspeaker4mic4 = TFPanel(self.speaker4mic4,datadist['tf_spk4_mic4_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+
+
+    def matlabTFcal(self,path,order):
+        plotter = tfplotter(path,order)
+        global datadist
+        datadist = plotter.getResult()
+        self.updateTFplots()
+
+    def start_matlabcal(self):
+        self.sig_para_info.SetValue("Current sec-path TF order is {order} and Learning rate is {rate}".format(
+            order=tforder, rate=learning_rate))
+        t = threading.Thread(target=self.matlabTFcal, args=(str(sigCal_workingPath), sigCal_TFOrder))
+        t.start()
+        # t.setDaemon(True)
+
+
+
+
+
+
+
+class TFPanel(wx.Panel):
+    def __init__(self,parent,data,
+                 widPixel=1024,
+                 heightPixel=768):
+        self.data = data if(data!=[]) else [1,2,3,2,1,2,3,4,1,2]
+        wx.Panel.__init__(self,parent)
+        self.widPixel  = widPixel
+        self.heightPixel = heightPixel
+        self.figure = Figure(figsize=(self.widPixel/180, self.heightPixel/300))
+        self.axes = self.figure.add_subplot(111)
+        x = np.arange(0,len(self.data))
+        y = np.array(self.data)
+        self.axes.plot(x, y,color='#C54900')
+        self.axes.grid(True, which='both')
+        self.canvas = FigureCanvas(self, -1, self.figure)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.Add(self.canvas, 1, wx.ALL | wx.CENTER| wx.EXPAND)
+        self.SetSizer(self.sizer)
+        self.Fit()
 
 
 class MonitorPanel(wx.Panel):
@@ -888,7 +1032,7 @@ class MonitorPanel(wx.Panel):
                  fftxAxis = 'log' ):
 
         wx.Panel.__init__(self, parent)
-        self.monitor = Monitor(44100, pyaudio.paInt16, 1, samplingPoints)
+        self.monitor = Monitor (44100, pyaudio.paInt16, 1, samplingPoints)
         self.CHUNK = samplingPoints
         self.figure = Figure(figsize=(widthPixel/200, heightPixel/140))
         self.canvas = FigureCanvas(self, -1, self.figure)
@@ -918,8 +1062,8 @@ class MonitorPanel(wx.Panel):
         rt_line = line.Line2D([], [], color='#C54900')
         fft_line = line.Line2D([], [], color='#C54900')
 
-        rt_x_data = np.arange(0, self.CHUNK / 44100, 1 / 44100)
-        fft_x_data = np.arange(0, (self.CHUNK / 2 + 1) / (self.CHUNK) * 44100, (1) / (self.CHUNK) * 44100)
+        rt_x_data = np.arange(0, float(self.CHUNK) / 44100, 1.0 / 44100)
+        fft_x_data = np.arange(0, float(self.CHUNK / 2 + 1) / (self.CHUNK) * 44100, (1.0) / (self.CHUNK) * 44100)
 
         def plot_init():
             rt_ax.add_line(rt_line)

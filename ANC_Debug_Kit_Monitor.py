@@ -5,12 +5,11 @@
 
 # imports
 import pyaudio
-import tkinter as tk
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import matplotlib.lines as line
 import threading
-import queue
+import Queue
 import numpy as np
 from scipy import fftpack
 from scipy import signal
@@ -37,7 +36,7 @@ class Monitor():
         self.__ad_rdy_ev = threading.Event()
 
 
-        self.audioQueue = queue.Queue()
+        self.audioQueue = Queue.Queue()
         self.window = signal.hamming(pFramesPerBuffer)
         self.realTimeData= np.arange(0, pFramesPerBuffer, 1)
         self.fftData=[]
@@ -77,7 +76,7 @@ class Monitor():
                 while not q.empty():
                     q.get()
                 self.realTimeData = np.frombuffer(data, np.dtype('<i2'))
-                self.realTimeData = self.realTimeData/65536
+                self.realTimeData = self.realTimeData/65536.0
                 self.realTimeData = self.realTimeData * self.window
                 fft_temp_data = fftpack.fft(self.realTimeData, self.realTimeData.size, overwrite_x=True)
                 self.fftData = np.abs(fft_temp_data)[0:fft_temp_data.size // 2 + 1]
@@ -101,10 +100,11 @@ if __name__ == "__main__":
     if args.format =='Int16':
             mFormat = pyaudio.paInt16
     monitor = Monitor(args.rate,mFormat,args.channel,args.frames)
+    print(args.rate)
 
     # Matplotlib
     fig = plt.figure()
-    rt_ax = plt.subplot(212, xlim=(0,CHUNK/args.rate), ylim=(-0.01, 0.01))
+    rt_ax = plt.subplot(212, xlim=(0,float(CHUNK)/args.rate), ylim=(-0.01, 0.01))
     fft_ax = plt.subplot(211)
     fft_ax.set_yscale('log')
     fft_ax.set_xscale('log')
@@ -115,8 +115,8 @@ if __name__ == "__main__":
     rt_line = line.Line2D([], [])
     fft_line = line.Line2D([], [])
 
-    rt_x_data = np.arange(0, CHUNK/args.rate, 1/args.rate)
-    fft_x_data = np.arange(0, (CHUNK/2+1)/(CHUNK)*args.rate,(1)/(CHUNK)*args.rate)
+    rt_x_data = np.arange(0, float(CHUNK)/args.rate, 1.0/args.rate)
+    fft_x_data = np.arange(0, float((CHUNK/2+1))/(CHUNK)*args.rate,(1.0)/(CHUNK)*args.rate)
 
 
     def plot_init():
