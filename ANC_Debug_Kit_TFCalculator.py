@@ -50,12 +50,12 @@ class TFCalculator():
                 logging.debug(filenames[i*signalsInaGroup])
                 logging.debug(filenames[i*signalsInaGroup+j+1])
                 tfname = "tf_"+filenames[i*signalsInaGroup+j+1]
-                inp = filenames[i*signalsInaGroup],
-                outp = filenames[i*signalsInaGroup+j+1]
+                inp = np.array(datalistlist[i*signalsInaGroup])
+                outp = np.array(datalistlist[i*signalsInaGroup+j+1])
                 fxlms = FxLMS.FxLMS(input_signal=inp,output_signal=outp,order=self.order,learning_rate=self.miu)
                 fxlms.solve()
                 (weight,error)=fxlms.getResults()
-                tf_dict[tfname] = weight
+                tf_dict[tfname] = weight.tolist()
         return tf_dict
 
     def getResult(self):

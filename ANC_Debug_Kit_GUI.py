@@ -56,7 +56,7 @@ fft_y_lower = 0.001
 
 datadist = {}
 tforder = 300
-sigCal_learningRate = 0.005
+sigCal_learningRate = 0.0050
 
 is_anc_on = False
 anc_info = " 100dBA with maximum "
