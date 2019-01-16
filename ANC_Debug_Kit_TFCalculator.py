@@ -3,8 +3,8 @@
 # Copyright © 2018 Intelligent Acoustic Power . All rights reserved.
 # This python file is used to call matlab core.
 
-import matlab.engine
 import matplotlib.pyplot as plt
+import FxLMS
 import matplotlib.lines as line
 import numpy as np
 import os
@@ -12,10 +12,11 @@ import logging
 
 signalsInaGroup = 5
 
-class tfplotter():
-    def __init__(self,folderPath,order):
+class TFCalculator():
+    def __init__(self,folderPath,order,miu):
         self.folderPath = folderPath
-        self.order = order - 1
+        self.order      = order
+        self.miu        = miu
         self.result_dict = {}
         filesnames = os.listdir(self.folderPath)
         filesnames.sort()
@@ -42,12 +43,6 @@ class tfplotter():
 
 
     def calculateTF(self,filenames,datalistlist):
-        engine = matlab.engine.start_matlab()
-        for i in range(len(filenames)):
-            engine.workspace[filenames[i]] = datalistlist[i]
-            command = filenames[i]+"=cell2mat("+filenames[i]+")'"
-            engine.eval(command,nargout=0)
-        print(engine.workspace)
         groups = len(filenames)/signalsInaGroup
         tf_dict = {}
         for i in range(groups):
@@ -55,14 +50,12 @@ class tfplotter():
                 logging.debug(filenames[i*signalsInaGroup])
                 logging.debug(filenames[i*signalsInaGroup+j+1])
                 tfname = "tf_"+filenames[i*signalsInaGroup+j+1]
-                command = tfname+"=firwiener({order},{inp},{outp})".format(
-                    order = self.order,
-                    inp = filenames[i*signalsInaGroup],
-                    outp = filenames[i*signalsInaGroup+j+1]
-                )
-                engine.eval(command,nargout=0)
-                tf_dict[tfname] = engine.workspace[tfname][0]
-        engine.quit()
+                inp = filenames[i*signalsInaGroup],
+                outp = filenames[i*signalsInaGroup+j+1]
+                fxlms = FxLMS.FxLMS(input_signal=inp,output_signal=outp,order=self.order,learning_rate=self.miu)
+                fxlms.solve()
+                (weight,error)=fxlms.getResults()
+                tf_dict[tfname] = weight
         return tf_dict
 
     def getResult(self):
@@ -75,7 +68,7 @@ class tfplotter():
 
 if __name__ == '__main__':
     path = '/Users/Vicent/Downloads/ANC_2h5h/anc_debug_kit/Signals'
-    plotter = tfplotter(path,300)
+    plotter = TFCalculator(path, 300)
     dict = plotter.getResult()
     print(dict.keys())
 

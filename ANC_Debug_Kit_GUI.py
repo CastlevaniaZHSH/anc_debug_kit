@@ -10,10 +10,9 @@ import pyaudio
 import matplotlib
 matplotlib.use('WXAgg')
 
-from anc_debug_kit_monitor import Monitor
-#from anc_debug_kit_matlab_caller import tfplotter
+from ANC_Debug_Kit_TFCalculator import TFCalculator
 import wx
-import anc_debug_kit_monitor
+from ANC_Debug_Kit_Monitor import Monitor
 import matplotlib.pyplot as plt
 import threading
 import matplotlib.animation as animation
@@ -57,7 +56,7 @@ fft_y_lower = 0.001
 
 datadist = {}
 tforder = 300
-learning_rate = 0.5
+sigCal_learningRate = 0.005
 
 is_anc_on = False
 anc_info = " 100dBA with maximum "
@@ -980,16 +979,16 @@ class frameMain(wx.Frame):
         self.tfpicspeaker4mic4 = TFPanel(self.speaker4mic4,datadist['tf_spk4_mic4_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
 
 
-    def matlabTFcal(self,path,order):
-        plotter = tfplotter(path,order)
+    def matlabTFcal(self,path,order,miu):
+        plotter = TFCalculator(path,order,miu)
         global datadist
         datadist = plotter.getResult()
         self.updateTFplots()
 
     def start_matlabcal(self):
         self.sig_para_info.SetValue("Current sec-path TF order is {order} and Learning rate is {rate}".format(
-            order=tforder, rate=learning_rate))
-        t = threading.Thread(target=self.matlabTFcal, args=(str(sigCal_workingPath), sigCal_TFOrder))
+            order=tforder, rate=sigCal_learningRate))
+        t = threading.Thread(target=self.matlabTFcal, args=(str(sigCal_workingPath), sigCal_TFOrder,sigCal_learningRate))
         t.start()
         # t.setDaemon(True)
 
