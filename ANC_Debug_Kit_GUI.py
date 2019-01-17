@@ -25,7 +25,7 @@ import os
 import time
 
 main_frame = 1000
-realTime_weigting = 1001
+real_time_weigting = 1001
 dpp_panel = 1002
 recompilePanel = 1003
 
@@ -55,9 +55,6 @@ fft_y_upper = 100
 fft_y_lower = 0.001
 
 datadist = {}
-tforder = 300
-sigCal_learningRate = 0.0050
-
 is_anc_on = False
 anc_info = " 100dBA with maximum "
 
@@ -68,8 +65,8 @@ anc_info = " 100dBA with maximum "
 ###########################################################################
 
 sigCal_workingPath = os.getcwd()
-sigCal_info = "Current sec-path TF order is 300 and Learning rate is 0.5"
-sigCal_learningRate = 0.5
+sigCal_info = "Current sec-path TF order is 300 and Learning rate is 0.001"
+sigCal_learningRate = 0.001
 sigCal_TFOrder = 300
 sigCal_samplingIndex = 0
 
@@ -82,7 +79,6 @@ class frameMain(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, id=main_frame, title=wx.EmptyString, pos=wx.DefaultPosition,
                           size=wx.Size(main_frame_width, main_frame_height), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
-
 
         self.SetSizeHintsSz(wx.DefaultSize, wx.DefaultSize)
         self.SetBackgroundColour(wx.Colour(117, 117, 117))
@@ -104,26 +100,258 @@ class frameMain(wx.Frame):
                                        wx.TAB_TRAVERSAL)
         boxSizerRealtime2 = wx.BoxSizer(wx.HORIZONTAL)
 
-        #self.m_bitmap3 = wx.StaticBitmap(self.panelRealtime2, wx.ID_ANY, wx.Bitmap(u"/Users/Vicent/Downloads/ANC_2h5h/anc_debug_kit/logo33.png", wx.BITMAP_TYPE_ANY),
-        #                                 wx.DefaultPosition, wx.DefaultSize, 0)
-        #boxSizerRealtime2.Add(self.m_bitmap3, 0, wx.ALIGN_BOTTOM | wx.BOTTOM, 20)
+        self.m_bitmap3 = wx.StaticBitmap(self.panelRealtime2, wx.ID_ANY, wx.Bitmap(u"logo33.png", wx.BITMAP_TYPE_ANY),
+                                         wx.DefaultPosition, wx.DefaultSize, 0)
+        boxSizerRealtime2.Add(self.m_bitmap3, 0, wx.ALIGN_BOTTOM | wx.BOTTOM, 20)
 
         self.panelMonitor = wx.Panel(self.panelRealtime2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
                                      wx.TAB_TRAVERSAL)
         self.panelMonitor.SetBackgroundColour(wx.Colour(255, 255, 255))
 
-        self.testPanel = MonitorPanel(self.panelMonitor,widthPixel=main_frame_width,heightPixel=main_frame_height,
-                                      rt_xlower=realTime_x_lower,rt_xupper=realTime_x_upper,
-                                      rt_ylower=realTime_y_lower,rt_yupper=realTime_y_upper,
-                                      fft_xlower=fft_x_lower,fft_xupper=fft_x_upper,
-                                      fft_ylower=fft_y_lower,fft_yupper = fft_y_upper,fftxAxis='log')
+        self.testPanel = MonitorPanel(self.panelMonitor, widthPixel=main_frame_width, heightPixel=main_frame_height,
+                                      rt_xlower = realTime_x_lower, rt_xupper = realTime_x_upper,rt_ylower = realTime_y_lower, rt_yupper = realTime_y_upper,
+                                      fft_xlower = fft_x_lower, fft_xupper = fft_x_upper,fft_ylower = fft_y_lower, fft_yupper = fft_y_upper, fftxAxis = 'log')
 
+        boxSizerRealtime2.Add(self.panelMonitor, 16, wx.ALL | wx.EXPAND, 25)
 
-        boxSizerRealtime2.Add(self.panelMonitor, 4, wx.EXPAND | wx.ALL, 25)
+        self.m_notebook7 = wx.Notebook(self.panelRealtime2, wx.ID_ANY, wx.DefaultPosition, wx.Size(-1, -1), wx.NB_LEFT)
+        self.m_panel34 = wx.Panel(self.m_notebook7, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        bSizerMonitor1 = wx.BoxSizer(wx.VERTICAL)
 
+        self.m_panel36 = wx.Panel(self.m_panel34, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        bSizerMonitor1.Add(self.m_panel36, 1, wx.EXPAND | wx.ALL, 5)
+
+        self.m_monitor_controller1 = wx.Panel(self.m_panel34, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
+                                              wx.TAB_TRAVERSAL)
+        self.m_monitor_controller1.SetBackgroundColour(wx.Colour(255, 170, 82))
+
+        sbSizer51 = wx.StaticBoxSizer(
+            wx.StaticBox(self.m_monitor_controller1, wx.ID_ANY, u"Realtime Contol Parameters"), wx.VERTICAL)
+
+        bSizer131 = wx.BoxSizer(wx.VERTICAL)
+
+        sbSizer381 = wx.StaticBoxSizer(wx.StaticBox(self.m_monitor_controller1, wx.ID_ANY, u"General Parameters"),
+                                       wx.VERTICAL)
+
+        bSizer711 = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.m_staticText53 = wx.StaticText(self.m_monitor_controller1, wx.ID_ANY, u"Step Size:", wx.DefaultPosition,
+                                            wx.DefaultSize, 0)
+        self.m_staticText53.Wrap(-1)
+        bSizer711.Add(self.m_staticText53, 0, wx.ALL, 2)
+
+        self.conStepSIze = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"0.001", wx.DefaultPosition,
+                                       wx.DefaultSize, 0)
+        bSizer711.Add(self.conStepSIze, 1, wx.ALL, 0)
+
+        self.m_staticText54 = wx.StaticText(self.m_monitor_controller1, wx.ID_ANY, u"Ref Sig Amp:", wx.DefaultPosition,
+                                            wx.DefaultSize, 0)
+        self.m_staticText54.Wrap(-1)
+        bSizer711.Add(self.m_staticText54, 0, wx.ALL, 2)
+
+        self.conRefSigAmp = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"0.004", wx.DefaultPosition,
+                                        wx.DefaultSize, 0)
+        bSizer711.Add(self.conRefSigAmp, 1, wx.ALL, 0)
+
+        self.m_staticText55 = wx.StaticText(self.m_monitor_controller1, wx.ID_ANY, u"Anti-diverge Factor:",
+                                            wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_staticText55.Wrap(-1)
+        bSizer711.Add(self.m_staticText55, 0, wx.ALL, 2)
+
+        self.conAntiDivFactor = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"0.001", wx.DefaultPosition,
+                                            wx.DefaultSize, 0)
+        bSizer711.Add(self.conAntiDivFactor, 1, wx.ALL, 0)
+
+        sbSizer381.Add(bSizer711, 1, wx.EXPAND, 5)
+
+        bSizer131.Add(sbSizer381, 0, wx.EXPAND, 0)
+
+        self.m_staticline21 = wx.StaticLine(self.m_monitor_controller1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
+                                            wx.LI_HORIZONTAL)
+        bSizer131.Add(self.m_staticline21, 0, wx.EXPAND | wx.ALL, 5)
+
+        sbSizer391 = wx.StaticBoxSizer(wx.StaticBox(self.m_monitor_controller1, wx.ID_ANY, u"Frequency one settings"),
+                                       wx.VERTICAL)
+
+        sbSizer621 = wx.StaticBoxSizer(wx.StaticBox(self.m_monitor_controller1, wx.ID_ANY, u"Weights"), wx.VERTICAL)
+
+        bSizer2421 = wx.BoxSizer(wx.VERTICAL)
+
+        bSizer1721 = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.m_staticText1331 = wx.StaticText(self.m_monitor_controller1, wx.ID_ANY, u"Mic1 Weight:",
+                                              wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_staticText1331.Wrap(-1)
+        bSizer1721.Add(self.m_staticText1331, 0, wx.ALL, 2)
+
+        self.freq1Mic1Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+                                           wx.DefaultSize, wx.TE_PROCESS_ENTER)
+        bSizer1721.Add(self.freq1Mic1Weight, 1, wx.ALL, 0)
+
+        self.m_staticText13121 = wx.StaticText(self.m_monitor_controller1, wx.ID_ANY, u"Mic3 Weight:",
+                                               wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_staticText13121.Wrap(-1)
+        bSizer1721.Add(self.m_staticText13121, 0, wx.ALL, 2)
+
+        self.freq1Mic3Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+                                           wx.DefaultSize, wx.TE_PROCESS_ENTER)
+        bSizer1721.Add(self.freq1Mic3Weight, 1, wx.ALL, 0)
+
+        bSizer2421.Add(bSizer1721, 0, wx.EXPAND, 0)
+
+        sbSizer621.Add(bSizer2421, 0, wx.EXPAND, 0)
+
+        bSizer2431 = wx.BoxSizer(wx.VERTICAL)
+
+        bSizer1731 = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.m_staticText1341 = wx.StaticText(self.m_monitor_controller1, wx.ID_ANY, u"Mic2 Weight:",
+                                              wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_staticText1341.Wrap(-1)
+        bSizer1731.Add(self.m_staticText1341, 0, wx.ALL, 2)
+
+        self.freq1Mic2Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+                                           wx.DefaultSize, wx.TE_PROCESS_ENTER)
+        bSizer1731.Add(self.freq1Mic2Weight, 1, wx.ALL, 0)
+
+        self.m_staticText13131 = wx.StaticText(self.m_monitor_controller1, wx.ID_ANY, u"Mic4 Weight:",
+                                               wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_staticText13131.Wrap(-1)
+        bSizer1731.Add(self.m_staticText13131, 0, wx.ALL, 2)
+
+        self.freq1Mic4Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+                                           wx.DefaultSize, wx.TE_PROCESS_ENTER)
+        bSizer1731.Add(self.freq1Mic4Weight, 1, wx.ALL, 0)
+
+        bSizer2431.Add(bSizer1731, 0, wx.EXPAND, 0)
+
+        sbSizer621.Add(bSizer2431, 0, wx.EXPAND, 0)
+
+        sbSizer391.Add(sbSizer621, 1, wx.EXPAND, 5)
+
+        bSizer131.Add(sbSizer391, 0, wx.EXPAND, 0)
+
+        self.m_staticline211 = wx.StaticLine(self.m_monitor_controller1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
+                                             wx.LI_HORIZONTAL)
+        bSizer131.Add(self.m_staticline211, 0, wx.EXPAND | wx.ALL, 5)
+
+        sbSizer3911 = wx.StaticBoxSizer(wx.StaticBox(self.m_monitor_controller1, wx.ID_ANY, u"Frequency two settings"),
+                                        wx.VERTICAL)
+
+        sbSizer6211 = wx.StaticBoxSizer(wx.StaticBox(self.m_monitor_controller1, wx.ID_ANY, u"Weights"), wx.VERTICAL)
+
+        bSizer24211 = wx.BoxSizer(wx.VERTICAL)
+
+        bSizer17211 = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.m_staticText13311 = wx.StaticText(self.m_monitor_controller1, wx.ID_ANY, u"Mic1 Weight:",
+                                               wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_staticText13311.Wrap(-1)
+        bSizer17211.Add(self.m_staticText13311, 0, wx.ALL, 2)
+
+        self.freq2Mic1Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+                                           wx.DefaultSize, wx.TE_PROCESS_ENTER)
+        bSizer17211.Add(self.freq2Mic1Weight, 1, wx.ALL, 0)
+
+        self.m_staticText131211 = wx.StaticText(self.m_monitor_controller1, wx.ID_ANY, u"Mic3 Weight:",
+                                                wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_staticText131211.Wrap(-1)
+        bSizer17211.Add(self.m_staticText131211, 0, wx.ALL, 2)
+
+        self.freq2Mic3Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+                                           wx.DefaultSize, wx.TE_PROCESS_ENTER)
+        bSizer17211.Add(self.freq2Mic3Weight, 1, wx.ALL, 0)
+
+        bSizer24211.Add(bSizer17211, 0, wx.EXPAND, 0)
+
+        sbSizer6211.Add(bSizer24211, 0, wx.EXPAND, 0)
+
+        bSizer24311 = wx.BoxSizer(wx.VERTICAL)
+
+        bSizer17311 = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.m_staticText13411 = wx.StaticText(self.m_monitor_controller1, wx.ID_ANY, u"Mic2 Weight:",
+                                               wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_staticText13411.Wrap(-1)
+        bSizer17311.Add(self.m_staticText13411, 0, wx.ALL, 2)
+
+        self.freq2Mic2Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+                                           wx.DefaultSize, wx.TE_PROCESS_ENTER)
+        bSizer17311.Add(self.freq2Mic2Weight, 1, wx.ALL, 0)
+
+        self.m_staticText131311 = wx.StaticText(self.m_monitor_controller1, wx.ID_ANY, u"Mic4 Weight:",
+                                                wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_staticText131311.Wrap(-1)
+        bSizer17311.Add(self.m_staticText131311, 0, wx.ALL, 2)
+
+        self.freq2Mic4Freq = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+                                         wx.DefaultSize, wx.TE_PROCESS_ENTER)
+        bSizer17311.Add(self.freq2Mic4Freq, 1, wx.ALL, 0)
+
+        bSizer24311.Add(bSizer17311, 0, wx.EXPAND, 0)
+
+        sbSizer6211.Add(bSizer24311, 0, wx.EXPAND, 0)
+
+        sbSizer3911.Add(sbSizer6211, 1, wx.EXPAND, 5)
+
+        bSizer131.Add(sbSizer3911, 1, wx.EXPAND, 5)
+
+        sbSizer51.Add(bSizer131, 0, wx.EXPAND, 5)
+
+        self.m_monitor_controller1.SetSizer(sbSizer51)
+        self.m_monitor_controller1.Layout()
+        sbSizer51.Fit(self.m_monitor_controller1)
+        bSizerMonitor1.Add(self.m_monitor_controller1, 0, wx.EXPAND | wx.ALL, 5)
+
+        self.m_panel181 = wx.Panel(self.m_panel34, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.m_panel181.SetBackgroundColour(wx.Colour(255, 170, 82))
+
+        sbSizer221 = wx.StaticBoxSizer(wx.StaticBox(self.m_panel181, wx.ID_ANY, u"Contol Panel"), wx.VERTICAL)
+
+        bSizer541 = wx.BoxSizer(wx.HORIZONTAL)
+
+        anc_status_radio_group1Choices = [u"ON", u"OFF"]
+        self.anc_status_radio_group1 = wx.RadioBox(self.m_panel181, wx.ID_ANY, u"ANC Status", wx.DefaultPosition,
+                                                   wx.DefaultSize, anc_status_radio_group1Choices, 1,
+                                                   wx.RA_SPECIFY_ROWS)
+        self.anc_status_radio_group1.SetSelection(1)
+        bSizer541.Add(self.anc_status_radio_group1, 0, wx.ALL, 5)
+
+        sbSizer331 = wx.StaticBoxSizer(wx.StaticBox(self.m_panel181, wx.ID_ANY, u"Info"), wx.HORIZONTAL)
+
+        self.conCurrentInfo = wx.TextCtrl(self.m_panel181, wx.ID_ANY, u"dB(a) 90dB ", wx.DefaultPosition,
+                                          wx.DefaultSize, 0)
+        sbSizer331.Add(self.conCurrentInfo, 1, wx.ALL | wx.EXPAND, 0)
+
+        bSizer541.Add(sbSizer331, 1, wx.EXPAND, 0)
+
+        sbSizer221.Add(bSizer541, 1, wx.EXPAND, 5)
+
+        self.anc_toggle_botton1 = wx.ToggleButton(self.m_panel181, wx.ID_ANY, u"Toggle Active Noise Cannelling",
+                                                  wx.DefaultPosition, wx.DefaultSize, 0)
+        self.anc_toggle_botton1.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT))
+
+        sbSizer221.Add(self.anc_toggle_botton1, 1, wx.ALL | wx.EXPAND, 5)
+
+        self.m_panel181.SetSizer(sbSizer221)
+        self.m_panel181.Layout()
+        sbSizer221.Fit(self.m_panel181)
+        bSizerMonitor1.Add(self.m_panel181, 0, wx.EXPAND | wx.ALL, 5)
+
+        self.m_panel37 = wx.Panel(self.m_panel34, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        bSizerMonitor1.Add(self.m_panel37, 1, wx.EXPAND | wx.ALL, 5)
+
+        self.m_panel34.SetSizer(bSizerMonitor1)
+        self.m_panel34.Layout()
+        bSizerMonitor1.Fit(self.m_panel34)
+        self.m_notebook7.AddPage(self.m_panel34, u"ENC Control Settings", True)
+        self.m_panel33 = wx.Panel(self.m_notebook7, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         bSizerMonitor = wx.BoxSizer(wx.VERTICAL)
 
-        self.m_monitor_controller = wx.Panel(self.panelRealtime2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
+        self.m_panel38 = wx.Panel(self.m_panel33, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        bSizerMonitor.Add(self.m_panel38, 1, wx.EXPAND | wx.ALL, 5)
+
+        self.m_monitor_controller = wx.Panel(self.m_panel33, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
                                              wx.TAB_TRAVERSAL)
         self.m_monitor_controller.SetBackgroundColour(wx.Colour(255, 170, 82))
 
@@ -133,10 +361,10 @@ class frameMain(wx.Frame):
         bSizer13 = wx.BoxSizer(wx.VERTICAL)
 
         weighting_Radio_groupsChoices = [u"A-Weight", u"B-Weight", u"C-Weight"]
-        self.weighting_Radio_groups = wx.RadioBox(self.m_monitor_controller, realTime_weigting, u"Weighting method",
+        self.weighting_Radio_groups = wx.RadioBox(self.m_monitor_controller, real_time_weigting, u"Weighting method",
                                                   wx.DefaultPosition, wx.DefaultSize, weighting_Radio_groupsChoices, 1,
                                                   wx.RA_SPECIFY_ROWS)
-        self.weighting_Radio_groups.SetSelection(weighting_index)
+        self.weighting_Radio_groups.SetSelection(0)
         bSizer13.Add(self.weighting_Radio_groups, 0, wx.ALL, 0)
 
         bSizer14 = wx.BoxSizer(wx.HORIZONTAL)
@@ -184,7 +412,7 @@ class frameMain(wx.Frame):
         self.m_staticText131.Wrap(-1)
         bSizer17.Add(self.m_staticText131, 0, wx.ALL, 2)
 
-        self.rtAx_lower_limit = wx.TextCtrl(self.m_monitor_controller, wx.ID_ANY,str(realTime_x_lower), wx.DefaultPosition,
+        self.rtAx_lower_limit = wx.TextCtrl(self.m_monitor_controller, wx.ID_ANY, str(realTime_x_lower), wx.DefaultPosition,
                                             wx.DefaultSize, wx.TE_PROCESS_ENTER)
         bSizer17.Add(self.rtAx_lower_limit, 1, wx.ALL, 0)
 
@@ -214,7 +442,7 @@ class frameMain(wx.Frame):
         self.m_staticText1311.Wrap(-1)
         bSizer171.Add(self.m_staticText1311, 0, wx.ALL, 2)
 
-        self.rtAy_lower_limit = wx.TextCtrl(self.m_monitor_controller, wx.ID_ANY,str(realTime_y_lower), wx.DefaultPosition,
+        self.rtAy_lower_limit = wx.TextCtrl(self.m_monitor_controller, wx.ID_ANY, str(realTime_y_lower), wx.DefaultPosition,
                                             wx.DefaultSize, wx.TE_PROCESS_ENTER)
         bSizer171.Add(self.rtAy_lower_limit, 1, wx.ALL, 0)
 
@@ -280,7 +508,7 @@ class frameMain(wx.Frame):
         self.m_staticText134.Wrap(-1)
         bSizer173.Add(self.m_staticText134, 0, wx.ALL, 2)
 
-        self.fftAy_upper = wx.TextCtrl(self.m_monitor_controller, wx.ID_ANY,str(fft_y_upper), wx.DefaultPosition, wx.DefaultSize,
+        self.fftAy_upper = wx.TextCtrl(self.m_monitor_controller, wx.ID_ANY, str(fft_y_upper), wx.DefaultPosition, wx.DefaultSize,
                                        wx.TE_PROCESS_ENTER)
         bSizer173.Add(self.fftAy_upper, 1, wx.ALL, 0)
 
@@ -306,43 +534,17 @@ class frameMain(wx.Frame):
         self.m_monitor_controller.SetSizer(sbSizer5)
         self.m_monitor_controller.Layout()
         sbSizer5.Fit(self.m_monitor_controller)
-        bSizerMonitor.Add(self.m_monitor_controller, 0, wx.EXPAND | wx.ALL, 5)
+        bSizerMonitor.Add(self.m_monitor_controller, 0, wx.ALL | wx.EXPAND, 5)
 
-        self.m_panel18 = wx.Panel(self.panelRealtime2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        self.m_panel18.SetBackgroundColour(wx.Colour(255, 170, 82))
+        self.m_panel39 = wx.Panel(self.m_panel33, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        bSizerMonitor.Add(self.m_panel39, 1, wx.EXPAND | wx.ALL, 5)
 
-        sbSizer22 = wx.StaticBoxSizer(wx.StaticBox(self.m_panel18, wx.ID_ANY, u"Contol Panel"), wx.VERTICAL)
+        self.m_panel33.SetSizer(bSizerMonitor)
+        self.m_panel33.Layout()
+        bSizerMonitor.Fit(self.m_panel33)
+        self.m_notebook7.AddPage(self.m_panel33, u"Monitor Settings", False)
 
-        bSizer54 = wx.BoxSizer(wx.HORIZONTAL)
-
-        anc_status_radio_groupChoices = [u"ON", u"OFF"]
-        self.anc_status_radio_group = wx.RadioBox(self.m_panel18, wx.ID_ANY, u"ANC Status", wx.DefaultPosition,
-                                                  wx.DefaultSize, anc_status_radio_groupChoices, 1, wx.RA_SPECIFY_ROWS)
-        self.anc_status_radio_group.SetSelection(1)
-        bSizer54.Add(self.anc_status_radio_group, 0, wx.ALL, 5)
-
-        sbSizer33 = wx.StaticBoxSizer(wx.StaticBox(self.m_panel18, wx.ID_ANY, u"Info"), wx.HORIZONTAL)
-
-        self.m_textCtrl12 = wx.TextCtrl(self.m_panel18, wx.ID_ANY, anc_info, wx.DefaultPosition, wx.DefaultSize,
-                                        0)
-        sbSizer33.Add(self.m_textCtrl12, 1, wx.ALL | wx.EXPAND, 0)
-
-        bSizer54.Add(sbSizer33, 1, wx.EXPAND, 0)
-
-        sbSizer22.Add(bSizer54, 1, wx.EXPAND, 5)
-
-        self.anc_toggle_botton = wx.ToggleButton(self.m_panel18, wx.ID_ANY, u"Toggle Active Noise Cannelling",
-                                                 wx.DefaultPosition, wx.DefaultSize, 0)
-        self.anc_toggle_botton.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT))
-
-        sbSizer22.Add(self.anc_toggle_botton, 1, wx.ALL | wx.EXPAND, 5)
-
-        self.m_panel18.SetSizer(sbSizer22)
-        self.m_panel18.Layout()
-        sbSizer22.Fit(self.m_panel18)
-        bSizerMonitor.Add(self.m_panel18, 1, wx.EXPAND | wx.ALL, 5)
-
-        boxSizerRealtime2.Add(bSizerMonitor, 3, wx.ALIGN_CENTER_VERTICAL, 0)
+        boxSizerRealtime2.Add(self.m_notebook7, 9, wx.ALL | wx.EXPAND, 5)
 
         self.panelRealtime2.SetSizer(boxSizerRealtime2)
         self.panelRealtime2.Layout()
@@ -374,10 +576,10 @@ class frameMain(wx.Frame):
 
         bSizer10 = wx.BoxSizer(wx.HORIZONTAL)
 
-        #self.m_bitmap2 = wx.StaticBitmap(self.DataProcessingPanel, wx.ID_ANY,
-        #                                 wx.Bitmap(u"/Users/Vicent/Downloads/ANC_2h5h/anc_debug_kit/logo33.png", wx.BITMAP_TYPE_ANY), wx.DefaultPosition,
-        #                                 wx.DefaultSize, 0)
-        #bSizer10.Add(self.m_bitmap2, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT, 5)
+        self.m_bitmap2 = wx.StaticBitmap(self.DataProcessingPanel, wx.ID_ANY,
+                                         wx.Bitmap(u"logo33.png", wx.BITMAP_TYPE_ANY), wx.DefaultPosition,
+                                         wx.DefaultSize, 0)
+        bSizer10.Add(self.m_bitmap2, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT, 5)
 
         sbSizer3 = wx.StaticBoxSizer(wx.StaticBox(self.DataProcessingPanel, wx.ID_ANY, u"Signals"), wx.VERTICAL)
 
@@ -474,21 +676,27 @@ class frameMain(wx.Frame):
         bSizer25 = wx.BoxSizer(wx.VERTICAL)
 
         self.speaker1 = wx.Notebook(self.speaker_1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_LEFT)
+        self.speaker1.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        self.speaker1.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+
         self.speaker1mic1 = wx.Panel(self.speaker1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker1mic1.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker1mic1 = TFPanel(self.speaker1mic1,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker1mic1 = TFPanel(self.speaker1mic1, [], widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker1.AddPage(self.speaker1mic1, u"Mic1", False)
+
         self.speaker1mic2 = wx.Panel(self.speaker1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker1mic2.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker1mic2 = TFPanel(self.speaker1mic2,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker1mic2 = TFPanel(self.speaker1mic2, [], widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker1.AddPage(self.speaker1mic2, u"Mic2", False)
+
         self.speaker1mic3 = wx.Panel(self.speaker1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker1mic3.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker1mic3 = TFPanel(self.speaker1mic3,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker1mic3 = TFPanel(self.speaker1mic3, [], widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker1.AddPage(self.speaker1mic3, u"Mic3", False)
+
         self.speaker1mic4 = wx.Panel(self.speaker1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker1mic4.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker1mic4 = TFPanel(self.speaker1mic4,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker1mic4 = TFPanel(self.speaker1mic4, [], widPixel=main_frame_width,heightPixel=main_frame_height)
         self.speaker1.AddPage(self.speaker1mic4, u"Mic4", False)
 
         bSizer25.Add(self.speaker1, 1, wx.ALL | wx.EXPAND, 5)
@@ -503,19 +711,24 @@ class frameMain(wx.Frame):
         self.speaker2 = wx.Notebook(self.speaker_2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_LEFT)
         self.speaker2mic1 = wx.Panel(self.speaker2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker2mic1.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker2mic1 = TFPanel(self.speaker2mic1,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker2mic1 = TFPanel(self.speaker2mic1, [], widPixel=main_frame_width,
+                                         heightPixel=main_frame_height)
         self.speaker2.AddPage(self.speaker2mic1, u"Mic1", False)
+
         self.speaker2mic2 = wx.Panel(self.speaker2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker2mic2.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker2mic2 = TFPanel(self.speaker2mic2,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker2mic2 = TFPanel(self.speaker2mic2, [], widPixel=main_frame_width,
+                                         heightPixel=main_frame_height)
         self.speaker2.AddPage(self.speaker2mic2, u"Mic2", False)
         self.speaker2mic3 = wx.Panel(self.speaker2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker2mic3.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker2mic3 = TFPanel(self.speaker2mic3,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker2mic3 = TFPanel(self.speaker2mic3, [], widPixel=main_frame_width,
+                                         heightPixel=main_frame_height)
         self.speaker2.AddPage(self.speaker2mic3, u"Mic3", False)
         self.speaker2mic4 = wx.Panel(self.speaker2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker2mic4.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker2mic4 = TFPanel(self.speaker2mic4,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker2mic4 = TFPanel(self.speaker2mic4, [], widPixel=main_frame_width,
+                                         heightPixel=main_frame_height)
         self.speaker2.AddPage(self.speaker2mic4, u"Mic4", False)
 
         bSizer26.Add(self.speaker2, 1, wx.EXPAND | wx.ALL, 5)
@@ -530,19 +743,23 @@ class frameMain(wx.Frame):
         self.speaker3 = wx.Notebook(self.speaker_3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_LEFT)
         self.speaker3mic1 = wx.Panel(self.speaker3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker3mic1.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker3mic1 = TFPanel(self.speaker3mic1,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker3mic1 = TFPanel(self.speaker3mic1, [], widPixel=main_frame_width,
+                                         heightPixel=main_frame_height)
         self.speaker3.AddPage(self.speaker3mic1, u"Mic1", False)
         self.speaker3mic2 = wx.Panel(self.speaker3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker3mic2.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker3mic2 = TFPanel(self.speaker3mic2,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker3mic2 = TFPanel(self.speaker3mic2, [], widPixel=main_frame_width,
+                                         heightPixel=main_frame_height)
         self.speaker3.AddPage(self.speaker3mic2, u"Mic2", False)
         self.speaker3mic3 = wx.Panel(self.speaker3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker3mic3.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker3mic3 = TFPanel(self.speaker3mic3,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker3mic3 = TFPanel(self.speaker3mic3, [], widPixel=main_frame_width,
+                                         heightPixel=main_frame_height)
         self.speaker3.AddPage(self.speaker3mic3, u"Mic3", False)
         self.speaker3mic4 = wx.Panel(self.speaker3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker3mic4.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker3mic4 = TFPanel(self.speaker3mic4,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker3mic4 = TFPanel(self.speaker3mic4, [], widPixel=main_frame_width,
+                                         heightPixel=main_frame_height)
         self.speaker3.AddPage(self.speaker3mic4, u"Mic4", False)
 
         bSizer27.Add(self.speaker3, 1, wx.EXPAND | wx.ALL, 5)
@@ -557,19 +774,23 @@ class frameMain(wx.Frame):
         self.speaker4 = wx.Notebook(self.speaker_4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_LEFT)
         self.speaker4mic1 = wx.Panel(self.speaker4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker4mic1.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker4mic1 = TFPanel(self.speaker4mic1,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker4mic1 = TFPanel(self.speaker4mic1, [], widPixel=main_frame_width,
+                                         heightPixel=main_frame_height)
         self.speaker4.AddPage(self.speaker4mic1, u"Mic1", False)
         self.speaker4mic2 = wx.Panel(self.speaker4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker4mic2.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker4mic2 = TFPanel(self.speaker4mic2,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker4mic2 = TFPanel(self.speaker4mic2, [], widPixel=main_frame_width,
+                                         heightPixel=main_frame_height)
         self.speaker4.AddPage(self.speaker4mic2, u"Mic2", False)
         self.speaker4mic3 = wx.Panel(self.speaker4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker4mic3.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker4mic3 = TFPanel(self.speaker4mic3,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker4mic3 = TFPanel(self.speaker4mic3, [], widPixel=main_frame_width,
+                                         heightPixel=main_frame_height)
         self.speaker4.AddPage(self.speaker4mic3, u"Mic3", False)
         self.speaker4mic4 = wx.Panel(self.speaker4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.speaker4mic4.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-        self.tfpicspeaker4mic4 = TFPanel(self.speaker4mic4,[],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.tfpicspeaker4mic4 = TFPanel(self.speaker4mic4, [], widPixel=main_frame_width,
+                                         heightPixel=main_frame_height)
         self.speaker4.AddPage(self.speaker4mic4, u"Mic4", False)
 
         bSizer28.Add(self.speaker4, 1, wx.EXPAND | wx.ALL, 5)
@@ -630,7 +851,7 @@ class frameMain(wx.Frame):
 
         bSizer81 = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.m_bitmap1 = wx.StaticBitmap(self.m_panel131, wx.ID_ANY, wx.Bitmap(u"/Users/Vicent/Downloads/ANC_2h5h/anc_debug_kit/logo.png", wx.BITMAP_TYPE_PNG),
+        self.m_bitmap1 = wx.StaticBitmap(self.m_panel131, wx.ID_ANY, wx.Bitmap(u"logo55.png", wx.BITMAP_TYPE_ANY),
                                          wx.DefaultPosition, wx.DefaultSize, 0)
         bSizer81.Add(self.m_bitmap1, 0, wx.ALIGN_BOTTOM | wx.RIGHT, 20)
 
@@ -680,6 +901,19 @@ class frameMain(wx.Frame):
 
         # Connect Events
         self.Bind(wx.EVT_SIZE, self.fressh)
+        self.conStepSIze.Bind(wx.EVT_TEXT_ENTER, self.onStepSizeChange)
+        self.conRefSigAmp.Bind(wx.EVT_TEXT_ENTER, self.onRefSigAmpChange)
+        self.conAntiDivFactor.Bind(wx.EVT_TEXT_ENTER, self.onAntiDiFChange)
+        self.freq1Mic1Weight.Bind(wx.EVT_TEXT_ENTER, self.onFreq1Mic1WChange)
+        self.freq1Mic3Weight.Bind(wx.EVT_TEXT_ENTER, self.onFreq1Mic3WChange)
+        self.freq1Mic2Weight.Bind(wx.EVT_TEXT_ENTER, self.onFreq1Mic2WChange)
+        self.freq1Mic4Weight.Bind(wx.EVT_TEXT_ENTER, self.onFreq1Mic4WChange)
+        self.freq2Mic1Weight.Bind(wx.EVT_TEXT_ENTER, self.onFreq2Mic1WChange)
+        self.freq2Mic3Weight.Bind(wx.EVT_TEXT_ENTER, self.onFreq2Mic3WChange)
+        self.freq2Mic2Weight.Bind(wx.EVT_TEXT_ENTER, self.onFreq2Mic2WChange)
+        self.freq2Mic4Freq.Bind(wx.EVT_TEXT_ENTER, self.onFreq2Mic4WChange)
+        self.anc_status_radio_group1.Bind(wx.EVT_RADIOBOX, self.onANCStatusChange)
+        self.anc_toggle_botton1.Bind(wx.EVT_TOGGLEBUTTON, self.onANCToggle)
         self.weighting_Radio_groups.Bind(wx.EVT_RADIOBOX, self.OnWeightingChange)
         self.sample_point_choices.Bind(wx.EVT_CHOICE, self.onSamplingPointChange)
         self.rtAx_upper_limit.Bind(wx.EVT_TEXT_ENTER, self.onRTXupperChange)
@@ -691,17 +925,12 @@ class frameMain(wx.Frame):
         self.fftAx_lower.Bind(wx.EVT_TEXT_ENTER, self.onFFTXlowerChange)
         self.fftAy_upper.Bind(wx.EVT_TEXT_ENTER, self.onFFTYupperChange)
         self.fftAy_lower.Bind(wx.EVT_TEXT_ENTER, self.onFFTYlowerChange)
-        self.anc_status_radio_group.Bind(wx.EVT_RADIOBOX, self.onANCStatusChange)
-        self.anc_toggle_botton.Bind(wx.EVT_TOGGLEBUTTON, self.onANCToggle)
         self.sig_dialog_picker.Bind(wx.EVT_DIRPICKER_CHANGED, self.onSigFolderSelected)
         self.sig_tf_order.Bind(wx.EVT_TEXT_ENTER, self.onTForderChange)
         self.sig_sampling_rate.Bind(wx.EVT_CHOICE, self.onTFSRChange)
         self.sig_learning_rate.Bind(wx.EVT_TEXT_ENTER, self.onLearningRateChange)
         self.sig_cal_new_tf.Bind(wx.EVT_BUTTON, self.onCalculateNewTF)
         self.sig_gen_new_c.Bind(wx.EVT_BUTTON, self.onGenerateNewC)
-
-    def __del__(self):
-        pass
 
     def update_testPanel(self):
         self.testPanel.ani._stop()
@@ -755,6 +984,40 @@ class frameMain(wx.Frame):
         self.status_bar_content.SetStatusText(text,0)
 
     # Virtual event handlers, overide them in your derived class
+
+    def onStepSizeChange(self, event):
+        event.Skip()
+
+    def onRefSigAmpChange(self, event):
+        event.Skip()
+
+    def onAntiDiFChange(self, event):
+        event.Skip()
+
+    def onFreq1Mic1WChange(self, event):
+        event.Skip()
+
+    def onFreq1Mic3WChange(self, event):
+        event.Skip()
+
+    def onFreq1Mic2WChange(self, event):
+        event.Skip()
+
+    def onFreq1Mic4WChange(self, event):
+        event.Skip()
+
+    def onFreq2Mic1WChange(self, event):
+        event.Skip()
+
+    def onFreq2Mic3WChange(self, event):
+        event.Skip()
+
+    def onFreq2Mic2WChange(self, event):
+        event.Skip()
+
+    def onFreq2Mic4WChange(self, event):
+        event.Skip()
+
     def OnWeightingChange(self, event):
         weighting_index = self.weighting_Radio_groups.GetSelection()
         self.printStatus("weighting index->"+str(weighting_index))
@@ -899,7 +1162,7 @@ class frameMain(wx.Frame):
         sigCal_TFOrder = 300
         temp = self.sig_tf_order.GetValue()
         if(self.is_digit(temp)):
-            if(int(temp)>20 and int(temp)<500):
+            if(int(temp)>20 and int(temp)<600):
                 sigCal_TFOrder = int(temp)
         self.printStatus("sigCal_TFOrder->" + str(sigCal_TFOrder))
         event.Skip()
@@ -910,11 +1173,17 @@ class frameMain(wx.Frame):
         event.Skip()
 
     def onLearningRateChange(self, event):
-        sigCal_learningRate = self.sig_learning_rate.GetValue()
+        global sigCal_learningRate
+        sigCal_learningRate = 0.001
+        temp = self.sig_learning_rate.GetValue()
+        if(self.is_digit(temp)):
+            if(float(temp)<1 and float(temp)>0):
+                    sigCal_learningRate = float(temp)
         self.printStatus("sigCal_learningRate->" + str(sigCal_learningRate))
         event.Skip()
 
     def onCalculateNewTF(self, event):
+        self.printStatus("Calculating transfer functions")
         self.start_matlabcal()
         self.updateTFplots()
         event.Skip()
@@ -922,7 +1191,9 @@ class frameMain(wx.Frame):
     def onGenerateNewC(self, event):
         event.Skip()
 
+
     def updateTFplots(self):
+        self.printStatus("Updating transfer functions" )
         self.tfpicspeaker1mic1.Destroy()
         self.tfpicspeaker1mic1 = TFPanel(self.speaker1mic1,datadist['tf_spk1_mic1_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
 
@@ -977,6 +1248,7 @@ class frameMain(wx.Frame):
 
         self.tfpicspeaker4mic4.Destroy()
         self.tfpicspeaker4mic4 = TFPanel(self.speaker4mic4,datadist['tf_spk4_mic4_output'],widPixel=main_frame_width,heightPixel=main_frame_height)
+        self.printStatus("Transfer functions updated.")
 
 
     def matlabTFcal(self,path,order,miu):
@@ -987,7 +1259,7 @@ class frameMain(wx.Frame):
 
     def start_matlabcal(self):
         self.sig_para_info.SetValue("Current sec-path TF order is {order} and Learning rate is {rate}".format(
-            order=tforder, rate=sigCal_learningRate))
+            order=sigCal_TFOrder, rate=sigCal_learningRate))
         t = threading.Thread(target=self.matlabTFcal, args=(str(sigCal_workingPath), sigCal_TFOrder,sigCal_learningRate))
         t.start()
         # t.setDaemon(True)
