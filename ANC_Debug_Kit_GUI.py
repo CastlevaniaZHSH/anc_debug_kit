@@ -69,7 +69,17 @@ sigCal_info = "Current sec-path TF order is 300 and Learning rate is 0.001"
 sigCal_learningRate = 0.001
 sigCal_TFOrder = 300
 sigCal_samplingIndex = 0
-
+conStepSize     = 0.001
+conRefSigAMp     = 0.1
+conAntiDivFactor = 0.01
+conFreq1Mic1W    = 1
+conFreq1Mic2W    = 1
+conFreq1Mic3W    = 1
+conFreq1Mic4W    = 1
+conFreq2Mic1W    = 1
+conFreq2Mic2W    = 1
+conFreq2Mic3W    = 1
+conFreq2Mic4W    = 1
 
 ###########################################################################
 ## Class frameMain
@@ -140,8 +150,8 @@ class frameMain(wx.Frame):
         self.m_staticText53.Wrap(-1)
         bSizer711.Add(self.m_staticText53, 0, wx.ALL, 2)
 
-        self.conStepSIze = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"0.001", wx.DefaultPosition,
-                                       wx.DefaultSize, 0)
+        self.conStepSIze = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, str(conStepSize), wx.DefaultPosition,
+                                       wx.DefaultSize, wx.TE_PROCESS_ENTER)
         bSizer711.Add(self.conStepSIze, 1, wx.ALL, 0)
 
         self.m_staticText54 = wx.StaticText(self.m_monitor_controller1, wx.ID_ANY, u"Ref Sig Amp:", wx.DefaultPosition,
@@ -149,8 +159,8 @@ class frameMain(wx.Frame):
         self.m_staticText54.Wrap(-1)
         bSizer711.Add(self.m_staticText54, 0, wx.ALL, 2)
 
-        self.conRefSigAmp = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"0.004", wx.DefaultPosition,
-                                        wx.DefaultSize, 0)
+        self.conRefSigAmp = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, str(conRefSigAMp), wx.DefaultPosition,
+                                        wx.DefaultSize, wx.TE_PROCESS_ENTER)
         bSizer711.Add(self.conRefSigAmp, 1, wx.ALL, 0)
 
         self.m_staticText55 = wx.StaticText(self.m_monitor_controller1, wx.ID_ANY, u"Anti-diverge Factor:",
@@ -158,8 +168,8 @@ class frameMain(wx.Frame):
         self.m_staticText55.Wrap(-1)
         bSizer711.Add(self.m_staticText55, 0, wx.ALL, 2)
 
-        self.conAntiDivFactor = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"0.001", wx.DefaultPosition,
-                                            wx.DefaultSize, 0)
+        self.conAntiDivFactor = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, str(conAntiDivFactor), wx.DefaultPosition,
+                                            wx.DefaultSize, wx.TE_PROCESS_ENTER)
         bSizer711.Add(self.conAntiDivFactor, 1, wx.ALL, 0)
 
         sbSizer381.Add(bSizer711, 1, wx.EXPAND, 5)
@@ -184,7 +194,7 @@ class frameMain(wx.Frame):
         self.m_staticText1331.Wrap(-1)
         bSizer1721.Add(self.m_staticText1331, 0, wx.ALL, 2)
 
-        self.freq1Mic1Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+        self.freq1Mic1Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, str(conFreq1Mic1W), wx.DefaultPosition,
                                            wx.DefaultSize, wx.TE_PROCESS_ENTER)
         bSizer1721.Add(self.freq1Mic1Weight, 1, wx.ALL, 0)
 
@@ -193,7 +203,7 @@ class frameMain(wx.Frame):
         self.m_staticText13121.Wrap(-1)
         bSizer1721.Add(self.m_staticText13121, 0, wx.ALL, 2)
 
-        self.freq1Mic3Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+        self.freq1Mic3Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, str(conFreq1Mic3W), wx.DefaultPosition,
                                            wx.DefaultSize, wx.TE_PROCESS_ENTER)
         bSizer1721.Add(self.freq1Mic3Weight, 1, wx.ALL, 0)
 
@@ -210,7 +220,7 @@ class frameMain(wx.Frame):
         self.m_staticText1341.Wrap(-1)
         bSizer1731.Add(self.m_staticText1341, 0, wx.ALL, 2)
 
-        self.freq1Mic2Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+        self.freq1Mic2Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, str(conFreq1Mic2W), wx.DefaultPosition,
                                            wx.DefaultSize, wx.TE_PROCESS_ENTER)
         bSizer1731.Add(self.freq1Mic2Weight, 1, wx.ALL, 0)
 
@@ -219,7 +229,7 @@ class frameMain(wx.Frame):
         self.m_staticText13131.Wrap(-1)
         bSizer1731.Add(self.m_staticText13131, 0, wx.ALL, 2)
 
-        self.freq1Mic4Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+        self.freq1Mic4Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, str(conFreq1Mic4W), wx.DefaultPosition,
                                            wx.DefaultSize, wx.TE_PROCESS_ENTER)
         bSizer1731.Add(self.freq1Mic4Weight, 1, wx.ALL, 0)
 
@@ -249,7 +259,7 @@ class frameMain(wx.Frame):
         self.m_staticText13311.Wrap(-1)
         bSizer17211.Add(self.m_staticText13311, 0, wx.ALL, 2)
 
-        self.freq2Mic1Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+        self.freq2Mic1Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, str(conFreq2Mic1W), wx.DefaultPosition,
                                            wx.DefaultSize, wx.TE_PROCESS_ENTER)
         bSizer17211.Add(self.freq2Mic1Weight, 1, wx.ALL, 0)
 
@@ -258,7 +268,7 @@ class frameMain(wx.Frame):
         self.m_staticText131211.Wrap(-1)
         bSizer17211.Add(self.m_staticText131211, 0, wx.ALL, 2)
 
-        self.freq2Mic3Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+        self.freq2Mic3Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, str(conFreq2Mic3W), wx.DefaultPosition,
                                            wx.DefaultSize, wx.TE_PROCESS_ENTER)
         bSizer17211.Add(self.freq2Mic3Weight, 1, wx.ALL, 0)
 
@@ -275,7 +285,7 @@ class frameMain(wx.Frame):
         self.m_staticText13411.Wrap(-1)
         bSizer17311.Add(self.m_staticText13411, 0, wx.ALL, 2)
 
-        self.freq2Mic2Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+        self.freq2Mic2Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, str(conFreq2Mic2W), wx.DefaultPosition,
                                            wx.DefaultSize, wx.TE_PROCESS_ENTER)
         bSizer17311.Add(self.freq2Mic2Weight, 1, wx.ALL, 0)
 
@@ -284,9 +294,9 @@ class frameMain(wx.Frame):
         self.m_staticText131311.Wrap(-1)
         bSizer17311.Add(self.m_staticText131311, 0, wx.ALL, 2)
 
-        self.freq2Mic4Freq = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, u"1", wx.DefaultPosition,
+        self.freq2Mic4Weight = wx.TextCtrl(self.m_monitor_controller1, wx.ID_ANY, str(conFreq2Mic4W), wx.DefaultPosition,
                                          wx.DefaultSize, wx.TE_PROCESS_ENTER)
-        bSizer17311.Add(self.freq2Mic4Freq, 1, wx.ALL, 0)
+        bSizer17311.Add(self.freq2Mic4Weight, 1, wx.ALL, 0)
 
         bSizer24311.Add(bSizer17311, 0, wx.EXPAND, 0)
 
@@ -911,7 +921,7 @@ class frameMain(wx.Frame):
         self.freq2Mic1Weight.Bind(wx.EVT_TEXT_ENTER, self.onFreq2Mic1WChange)
         self.freq2Mic3Weight.Bind(wx.EVT_TEXT_ENTER, self.onFreq2Mic3WChange)
         self.freq2Mic2Weight.Bind(wx.EVT_TEXT_ENTER, self.onFreq2Mic2WChange)
-        self.freq2Mic4Freq.Bind(wx.EVT_TEXT_ENTER, self.onFreq2Mic4WChange)
+        self.freq2Mic4Weight.Bind(wx.EVT_TEXT_ENTER, self.onFreq2Mic4WChange)
         self.anc_status_radio_group1.Bind(wx.EVT_RADIOBOX, self.onANCStatusChange)
         self.anc_toggle_botton1.Bind(wx.EVT_TOGGLEBUTTON, self.onANCToggle)
         self.weighting_Radio_groups.Bind(wx.EVT_RADIOBOX, self.OnWeightingChange)
@@ -986,36 +996,114 @@ class frameMain(wx.Frame):
     # Virtual event handlers, overide them in your derived class
 
     def onStepSizeChange(self, event):
+        temp = self.conStepSIze.GetValue()
+        global conStepSize
+        if (self.is_digit(temp)):
+            if (float(temp) > 0 and float(temp)<=1):
+                conStepSize = temp
+        self.conStepSIze.SetValue(str(conStepSize))
+        self.printStatus("step size->" + str(conStepSize))
         event.Skip()
 
     def onRefSigAmpChange(self, event):
+        temp = self.conRefSigAmp.GetValue()
+        global conRefSigAMp
+        if (self.is_digit(temp)):
+            if (float(temp) > 0 and float(temp) <= 1):
+                conRefSigAMp = temp
+        self.conRefSigAmp.SetValue(str(conRefSigAMp))
+        self.printStatus("Reference Signal Amplitude->" + str(conRefSigAMp))
         event.Skip()
 
     def onAntiDiFChange(self, event):
+        temp = self.conAntiDivFactor.GetValue()
+        global conAntiDivFactor
+        if (self.is_digit(temp)):
+            if (float(temp) > 0 and float(temp) <= 1):
+                conAntiDivFactor = temp
+        self.conAntiDivFactor.SetValue(str(conAntiDivFactor))
+        self.printStatus("Anti diverge factor->" + str(conAntiDivFactor))
         event.Skip()
 
     def onFreq1Mic1WChange(self, event):
+        temp = self.freq1Mic1Weight.GetValue()
+        global conFreq1Mic1W
+        if (self.is_digit(temp)):
+            if (float(temp) > 0 and float(temp) <= 1):
+                conFreq1Mic1W = temp
+        self.freq1Mic1Weight.SetValue(str(conFreq1Mic1W))
+        self.printStatus("Frequency one mic 1 weight->" + str(conFreq1Mic1W))
         event.Skip()
 
     def onFreq1Mic3WChange(self, event):
+        temp = self.freq1Mic3Weight.GetValue()
+        global conFreq1Mic3W
+        if (self.is_digit(temp)):
+            if (float(temp) > 0 and float(temp) <= 1):
+                conFreq1Mic3W = temp
+        self.freq1Mic3Weight.SetValue(str(conFreq1Mic3W))
+        self.printStatus("Frequency one mic 3 weight->" + str(conFreq1Mic3W))
         event.Skip()
 
     def onFreq1Mic2WChange(self, event):
+        temp = self.freq1Mic2Weight.GetValue()
+        global conFreq1Mic2W
+        if (self.is_digit(temp)):
+            if (float(temp) > 0 and float(temp) <= 1):
+                conFreq1Mic2W = temp
+        self.freq1Mic2Weight.SetValue(str(conFreq1Mic2W))
+        self.printStatus("Frequency one mic 2 weight->" + str(conFreq1Mic2W))
         event.Skip()
 
     def onFreq1Mic4WChange(self, event):
+        temp = self.freq1Mic4Weight.GetValue()
+        global conFreq1Mic1W
+        if (self.is_digit(temp)):
+            if (float(temp) > 0 and float(temp) <= 1):
+                freq1Mic4Weight = temp
+        self.freq1Mic4Weight.SetValue(str(freq1Mic4Weight))
+        self.printStatus("Frequency one mic 4 weight->" + str(freq1Mic4Weight))
         event.Skip()
 
     def onFreq2Mic1WChange(self, event):
+        temp = self.freq2Mic1Weight.GetValue()
+        global conFreq2Mic1W
+        if (self.is_digit(temp)):
+            if (float(temp) > 0 and float(temp) <= 1):
+                conFreq2Mic1W = temp
+        self.freq2Mic1Weight.SetValue(str(conFreq2Mic1W))
+        self.printStatus("Frequency two mic 1 weight->" + str(conFreq2Mic1W))
         event.Skip()
 
     def onFreq2Mic3WChange(self, event):
+        temp = self.freq2Mic3Weight.GetValue()
+        global conFreq2Mic3W
+        if (self.is_digit(temp)):
+            if (float(temp) > 0 and float(temp) <= 1):
+                conFreq2Mic3W = temp
+        self.freq2Mic3Weight.SetValue(str(conFreq2Mic3W))
+        self.printStatus("Frequency two mic 3 weight->" + str(conFreq2Mic3W))
         event.Skip()
 
+
     def onFreq2Mic2WChange(self, event):
+        temp = self.freq2Mic2Weight.GetValue()
+        global conFreq2Mic2W
+        if (self.is_digit(temp)):
+            if (float(temp) > 0 and float(temp) <= 1):
+                conFreq2Mic2W = temp
+        self.freq2Mic2Weight.SetValue(str(conFreq2Mic2W))
+        self.printStatus("Frequency two mic 2 weight->" + str(conFreq2Mic2W))
         event.Skip()
 
     def onFreq2Mic4WChange(self, event):
+        temp = self.freq2Mic4Weight.GetValue()
+        global conFreq2Mic4W
+        if (self.is_digit(temp)):
+            if (float(temp) > 0 and float(temp) <= 1):
+                conFreq2Mic4W = temp
+        self.freq2Mic4Weight.SetValue(str(conFreq2Mic4W))
+        self.printStatus("Frequency two mic 4 weight->" + str(conFreq2Mic4W))
         event.Skip()
 
     def OnWeightingChange(self, event):
