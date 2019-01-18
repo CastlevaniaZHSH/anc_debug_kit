@@ -7,6 +7,7 @@
 import serial
 import time
 import copy
+from serial import STOPBITS_ONE,PARITY_NONE
 
 OFFS_START 			   	=	0
 OFFS_4IN1 				=	1
@@ -39,11 +40,11 @@ COMMAND_FORMAT			=[	0xFF,			# COMMAND start Byte
 							0x00,			#
 							0x00,			#
 							0x00,			# AMLITUDE	LSB
-							0xFF,			# FEEQ FR0M MSB
-							0xFF,			# FREQ FROM	LSB
-							0xFF,			# FREQ IN MSB
-							0xFF,			# FREQ IN LSB
-							0xFF,			# 4IN1
+							0x00,			# FREQ FROm MSB
+							0x64,			# FREQ FROM	LSB
+							0x00,			# FREQ IN MSB
+							0x64,			# FREQ IN LSB
+							0x00,			# 4IN1
 							0x8C]			# COMMAND END
 
 class Diplomat():
@@ -56,18 +57,24 @@ class Diplomat():
 
 	def sendPara(self,commandIndex,commandValue):
 		CON_DATA = COMMAND_FORMAT
+		CON_DATA[OFFS_4IN1]		= BYTE_IND
 		CON_DATA[OFFS_AMP_LSB] 	= commandIndex & 0x00FF
 		CON_DATA[OFFS_PHASE_LSB-1] 	= (commandValue & 0xFF00)>>8
 		CON_DATA[OFFS_PHASE_LSB] 	= commandValue & 0x00FF
 		Feedback = self.command(CON_DATA)
+		print(Feedback)
+		tf = False
 		if(Feedback!=[] and Feedback[OFFS_4IN1]== BYTE_COM):
 			CON_DATA[OFFS_4IN1] = BYTE_CON
 			Feedback = self.command(CON_DATA)
+			print(Feedback)
 			if(Feedback!=[] and Feedback[OFFS_4IN1]== BYTE_FIN):
-				return True
-		return False
+				print("send successfully")
+				tf = True
+		return tf
 
 	def command(self, __inputCommand):
+
 		received = []
 		try:
 			self.ser = serial.Serial(
@@ -91,6 +98,10 @@ class Diplomat():
 		return received
 
 if __name__ == "__main__":
-	bs = Diplomat('COM4', 115200, time.localtime())
-	bs.command("this is a test afsdsdfaf", "> ft:ok")
+	bs =  Diplomat('COM1',9600,PARITY_NONE,STOPBITS_ONE)
+	tf  = bs.sendPara(1,int(6553))
+	if tf:
+		print("send successfully.")
+	else:
+		print("send faild")
 

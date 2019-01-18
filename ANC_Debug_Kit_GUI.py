@@ -23,6 +23,8 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.figure import Figure
 import os
 import time
+import ANC_Debug_Kit_diplomat as Diplomat
+from serial import STOPBITS_ONE,PARITY_NONE
 
 main_frame = 1000
 real_time_weigting = 1001
@@ -81,12 +83,25 @@ conFreq2Mic2W    = 1
 conFreq2Mic3W    = 1
 conFreq2Mic4W    = 1
 
+ID_STEP_SIZE     = 1
+ID_REF_AMP       = 2
+ID_AD_FACTOR     = 3
+ID_FREQ1_MIC1    = 4
+ID_FREQ1_MIC2    = 5
+ID_FREQ1_MIC3    = 6
+ID_FREQ1_MIC4    = 7
+ID_FREQ2_MIC1    = 8
+ID_FREQ2_MIC2    = 9
+ID_FREQ2_MIC3    = 10
+ID_FREQ2_MIC4    = 11
+
 ###########################################################################
 ## Class frameMain
 ###########################################################################
 
 class frameMain(wx.Frame):
     def __init__(self, parent):
+        self.diplomat = Diplomat.Diplomat('COM1',9600,PARITY_NONE,STOPBITS_ONE)
         wx.Frame.__init__(self, parent, id=main_frame, title=wx.EmptyString, pos=wx.DefaultPosition,
                           size=wx.Size(main_frame_width, main_frame_height), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
@@ -1003,6 +1018,12 @@ class frameMain(wx.Frame):
                 conStepSize = temp
         self.conStepSIze.SetValue(str(conStepSize))
         self.printStatus("step size->" + str(conStepSize))
+        tf = self.sendParams(ID_STEP_SIZE,self.get2bytesInt(float(conStepSize)))
+        conStepSize
+        if tf:
+            self.printStatus("step size updated!")
+        else:
+            self.printStatus("step size update failed")
         event.Skip()
 
     def onRefSigAmpChange(self, event):
@@ -1012,7 +1033,13 @@ class frameMain(wx.Frame):
             if (float(temp) > 0 and float(temp) <= 1):
                 conRefSigAMp = temp
         self.conRefSigAmp.SetValue(str(conRefSigAMp))
-        self.printStatus("Reference Signal Amplitude->" + str(conRefSigAMp))
+        self.printStatus("Reference Signal Amplitude->" + conRefSigAMp)
+        self.printStatus("step size->" + str(conStepSize))
+        tf = self.sendParams(ID_REF_AMP,self.get2bytesInt(float(conRefSigAMp)))
+        if tf:
+            self.printStatus("Reference Signal Amplitude updated!")
+        else:
+            self.printStatus("Reference Signal Amplitude update failed")
         event.Skip()
 
     def onAntiDiFChange(self, event):
@@ -1022,7 +1049,12 @@ class frameMain(wx.Frame):
             if (float(temp) > 0 and float(temp) <= 1):
                 conAntiDivFactor = temp
         self.conAntiDivFactor.SetValue(str(conAntiDivFactor))
-        self.printStatus("Anti diverge factor->" + str(conAntiDivFactor))
+        self.printStatus("Anti diverge factor->" + conAntiDivFactor)
+        tf = self.sendParams(ID_AD_FACTOR,self.get2bytesInt(float(conAntiDivFactor)))
+        if tf:
+            self.printStatus("Anti diverge factor updated!")
+        else:
+            self.printStatus("Anti diverge factor update failed")
         event.Skip()
 
     def onFreq1Mic1WChange(self, event):
@@ -1032,7 +1064,12 @@ class frameMain(wx.Frame):
             if (float(temp) > 0 and float(temp) <= 1):
                 conFreq1Mic1W = temp
         self.freq1Mic1Weight.SetValue(str(conFreq1Mic1W))
-        self.printStatus("Frequency one mic 1 weight->" + str(conFreq1Mic1W))
+        self.printStatus("Frequency one mic 1 weight->" + conFreq1Mic1W)
+        tf = self.sendParams(ID_FREQ1_MIC1,self.get2bytesInt(float(conFreq1Mic1W)))
+        if tf:
+            self.printStatus("Frequency one mic 1 weight updated!")
+        else:
+            self.printStatus("Frequency one mic 1 weight update failed")
         event.Skip()
 
     def onFreq1Mic3WChange(self, event):
@@ -1042,7 +1079,12 @@ class frameMain(wx.Frame):
             if (float(temp) > 0 and float(temp) <= 1):
                 conFreq1Mic3W = temp
         self.freq1Mic3Weight.SetValue(str(conFreq1Mic3W))
-        self.printStatus("Frequency one mic 3 weight->" + str(conFreq1Mic3W))
+        self.printStatus("Frequency one mic 3 weight->" + conFreq1Mic3W)
+        tf = self.sendParams(ID_FREQ1_MIC3,self.get2bytesInt(float(conFreq1Mic3W)))
+        if tf:
+            self.printStatus("Frequency one mic 3 weight updated!")
+        else:
+            self.printStatus("Frequency one mic 3 weight update failed")
         event.Skip()
 
     def onFreq1Mic2WChange(self, event):
@@ -1052,7 +1094,12 @@ class frameMain(wx.Frame):
             if (float(temp) > 0 and float(temp) <= 1):
                 conFreq1Mic2W = temp
         self.freq1Mic2Weight.SetValue(str(conFreq1Mic2W))
-        self.printStatus("Frequency one mic 2 weight->" + str(conFreq1Mic2W))
+        self.printStatus("Frequency one mic 2 weight->" + conFreq1Mic2W)
+        tf = self.sendParams(ID_FREQ1_MIC2,self.get2bytesInt(float(conFreq1Mic2W)))
+        if tf:
+            self.printStatus("Frequency one mic 2 weight updated!")
+        else:
+            self.printStatus("Frequency one mic 2 weight update failed")
         event.Skip()
 
     def onFreq1Mic4WChange(self, event):
@@ -1062,7 +1109,12 @@ class frameMain(wx.Frame):
             if (float(temp) > 0 and float(temp) <= 1):
                 freq1Mic4Weight = temp
         self.freq1Mic4Weight.SetValue(str(freq1Mic4Weight))
-        self.printStatus("Frequency one mic 4 weight->" + str(freq1Mic4Weight))
+        self.printStatus("Frequency one mic 4 weight->" + freq1Mic4Weight)
+        tf = self.sendParams(ID_FREQ1_MIC4,self.get2bytesInt(float(freq1Mic4Weight)))
+        if tf:
+            self.printStatus("Frequency one mic 4 weight updated!")
+        else:
+            self.printStatus("Frequency one mic 4 weight update failed")
         event.Skip()
 
     def onFreq2Mic1WChange(self, event):
@@ -1072,7 +1124,12 @@ class frameMain(wx.Frame):
             if (float(temp) > 0 and float(temp) <= 1):
                 conFreq2Mic1W = temp
         self.freq2Mic1Weight.SetValue(str(conFreq2Mic1W))
-        self.printStatus("Frequency two mic 1 weight->" + str(conFreq2Mic1W))
+        self.printStatus("Frequency two mic 1 weight->" + conFreq2Mic1W)
+        tf = self.sendParams(ID_FREQ2_MIC1,self.get2bytesInt(float(conFreq2Mic1W)))
+        if tf:
+            self.printStatus("Frequency two mic 1 weight updated!")
+        else:
+            self.printStatus("Frequency two mic 1 weight update failed")
         event.Skip()
 
     def onFreq2Mic3WChange(self, event):
@@ -1082,7 +1139,12 @@ class frameMain(wx.Frame):
             if (float(temp) > 0 and float(temp) <= 1):
                 conFreq2Mic3W = temp
         self.freq2Mic3Weight.SetValue(str(conFreq2Mic3W))
-        self.printStatus("Frequency two mic 3 weight->" + str(conFreq2Mic3W))
+        self.printStatus("Frequency two mic 3 weight->" + conFreq2Mic3W)
+        tf = self.sendParams(ID_FREQ2_MIC3,self.get2bytesInt(float(conFreq2Mic3W)))
+        if tf:
+            self.printStatus("Frequency two mic 3 weight updated!")
+        else:
+            self.printStatus("Frequency two mic 3 weight update failed")
         event.Skip()
 
 
@@ -1093,7 +1155,12 @@ class frameMain(wx.Frame):
             if (float(temp) > 0 and float(temp) <= 1):
                 conFreq2Mic2W = temp
         self.freq2Mic2Weight.SetValue(str(conFreq2Mic2W))
-        self.printStatus("Frequency two mic 2 weight->" + str(conFreq2Mic2W))
+        self.printStatus("Frequency two mic 2 weight->" + conFreq2Mic2W)
+        tf = self.sendParams(ID_FREQ2_MIC2,self.get2bytesInt(float(conFreq2Mic2W)))
+        if tf:
+            self.printStatus("Frequency two mic 2 weight updated!")
+        else:
+            self.printStatus("Frequency two mic 2 weight update failed")
         event.Skip()
 
     def onFreq2Mic4WChange(self, event):
@@ -1103,7 +1170,12 @@ class frameMain(wx.Frame):
             if (float(temp) > 0 and float(temp) <= 1):
                 conFreq2Mic4W = temp
         self.freq2Mic4Weight.SetValue(str(conFreq2Mic4W))
-        self.printStatus("Frequency two mic 4 weight->" + str(conFreq2Mic4W))
+        self.printStatus("Frequency two mic 4 weight->" + conFreq2Mic4W)
+        tf = self.sendParams(ID_FREQ2_MIC4,self.get2bytesInt(float(conFreq2Mic4W)))
+        if tf:
+            self.printStatus("Frequency two mic 4 weight updated!")
+        else:
+            self.printStatus("Frequency two mic 4 weight update failed")
         event.Skip()
 
     def OnWeightingChange(self, event):
@@ -1352,11 +1424,13 @@ class frameMain(wx.Frame):
         t.start()
         # t.setDaemon(True)
 
+    def sendParams(self,id,val):
+        tf = self.diplomat.sendPara(id,val)
 
-
-
-
-
+    def get2bytesInt(self,floatValue):
+        temp = int(floatValue*65535)
+        print("the int value is "+ str(temp))
+        return temp
 
 class TFPanel(wx.Panel):
     def __init__(self,parent,data,
