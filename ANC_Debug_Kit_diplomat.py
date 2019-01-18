@@ -6,6 +6,7 @@
 ############################################################################
 import serial
 import time
+import copy
 
 OFFS_START 			   	=	0
 OFFS_4IN1 				=	1
@@ -24,6 +25,7 @@ BYTE_START				=	0xFF
 BYTE_IND				=	0x00
 BYTE_COM				=	0x20
 BYTE_CON				=	0x40
+BYTE_FIN				=	0x80
 BYTE_UNDEFINED			=	0xFF
 BYTE_END				=	0x8C
 
@@ -31,12 +33,12 @@ COMMAND_FORMAT			=[	0xFF,			# COMMAND start Byte
 							0x00,			# COMMAND indicator,control
 							0x00,			# COMMAND MSB
 							0x00,			#
-							0x00,			# COMMAND LSB
 							0x00,			#
+							0x00,			# COMMAND LSB
 							0x00,			# AMPLITUDE MSB
 							0x00,			#
-							0x00,			# AMLITUDE	LSB
 							0x00,			#
+							0x00,			# AMLITUDE	LSB
 							0xFF,			# FEEQ FR0M MSB
 							0xFF,			# FREQ FROM	LSB
 							0xFF,			# FREQ IN MSB
@@ -54,12 +56,16 @@ class Diplomat():
 
 	def sendPara(self,commandIndex,commandValue):
 		CON_DATA = COMMAND_FORMAT
-		CON_DATA[OFFS_AMP_LSB-1] = hex(commandIndex)
-		CON_DATA[OFFS_AMP_LSB] 	= hex(commandValue	&	0xFF00)
-		CON_DATA[OFFS_AMP_LSB+1] = hex(commandValue & 	0x00FF)
+		CON_DATA[OFFS_AMP_LSB] 	= commandIndex & 0x00FF
+		CON_DATA[OFFS_PHASE_LSB-1] 	= (commandValue & 0xFF00)>>8
+		CON_DATA[OFFS_PHASE_LSB] 	= commandValue & 0x00FF
 		Feedback = self.command(CON_DATA)
-
-
+		if(Feedback!=[] and Feedback[OFFS_4IN1]== BYTE_COM):
+			CON_DATA[OFFS_4IN1] = BYTE_CON
+			Feedback = self.command(CON_DATA)
+			if(Feedback!=[] and Feedback[OFFS_4IN1]== BYTE_FIN):
+				return True
+		return False
 
 	def command(self, __inputCommand):
 		received = []
@@ -74,14 +80,11 @@ class Diplomat():
 			self.ser.write(__inputCommand)
 			temp = self.ser.read()
 			while temp!='':
-				received.append(temp)
-				temp = self.ser.write(__inputCommand)
+				received.append(ord(temp))
+				temp = self.ser.read()
 			self.ser.close()
 		except KeyboardInterrupt:
 			self.ser.close()
-			raw_input('\nInterrupt by keyboard, press Enter to continue ... ')
-			import sys
-			sys.exit()
 		except:
 			self.ser.close()
 			raw_input('\n Exception, Press Enter to continue ... ')
